@@ -118,7 +118,7 @@ function parseTabs(file) {
                 // 2 strings
                 case 13:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -149,7 +149,7 @@ function parseTabs(file) {
                 // 3 strings
                 case 18:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
                           /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -186,7 +186,7 @@ function parseTabs(file) {
                 // 4 strings
                 case 23:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -229,7 +229,7 @@ function parseTabs(file) {
                 // 5 strings
                 case 28:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -278,7 +278,7 @@ function parseTabs(file) {
                 // 6 strings
                 case 33:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
