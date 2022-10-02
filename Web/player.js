@@ -1,9 +1,10 @@
 const playBtnEl = document.getElementById("play-btn");
+const stopBtnEl = document.getElementById("stop-btn");
 const errorTextEl = document.getElementById("error-text");
 
 // TODO: pak odstranit a volat funkci rovnou s nazvem skladby z jineho souboru
 //const tabSource = "tabs/test.txt";
-const tabSource = "tabs/test.txt";
+const tabSource = "tabs/aMollPentatonic.txt";
 let artist;
 let songName;
 let author;
@@ -13,6 +14,11 @@ let beat;
 let tabsArray = [];
 let isFileCorrect = true;
 let parsed = false;
+
+let audioCtx;
+let source;
+let stopRequest = false;
+let isPlaying = false;
 
 try {
     parseTabs(tabSource);
@@ -37,10 +43,12 @@ function parseTabs(file) {
     let tabsString = readTabsFile(tabSource);
     let lines = tabsString.split("\r\n");
     let currentBar = [];
+    let currentNoteLength;
+    let currentNoteTime;
 
     for (let i = 0; i < lines.length; i++) {
         if (!isFileCorrect) {
-            throw "Omlouváme se, soubor s taby je neplatný.";
+            throw "Soubor s taby je neplatný nebo poškozený.";
         }
         if (lines[i] == "|") {
             tabsArray.push(currentBar);
@@ -58,7 +66,7 @@ function parseTabs(file) {
                     author = lines[i];
                     break;
                 case 3:
-                    if (!isNaN(lines[i]) && parseInt(lines[i]) > 0 && parseInt(lines[i]) < 1000) {
+                    if (!isNaN(lines[i]) && parseInt(lines[i]) > 0 && parseInt(lines[i]) < 200) {
                         tempo = parseInt(lines[i]);
                     }
                     else {
@@ -79,13 +87,22 @@ function parseTabs(file) {
             let currentHarmony = []; // current note(s) 
             
             //TODO: Nahradit podminky regularnimi vyrazy, vcetne : na zacatku, cisla struny a _
+            //TODO: Nahradit for cyklem - zkratit
             //Select how many notes (strings) are played at once (max 6)
             switch(lines[i].length) {
                 // 1 string
                 case 8:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                        /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret number
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -102,7 +119,15 @@ function parseTabs(file) {
                 case 13:
                     // Check note length
                     if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                        /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret numbers
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -125,7 +150,15 @@ function parseTabs(file) {
                 case 18:
                     // Check note length
                     if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                          /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret numbers
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -154,7 +187,15 @@ function parseTabs(file) {
                 case 23:
                     // Check note length
                     if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                        /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret numbers
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -189,7 +230,15 @@ function parseTabs(file) {
                 case 28:
                     // Check note length
                     if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                        /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret numbers
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -230,7 +279,15 @@ function parseTabs(file) {
                 case 33:
                     // Check note length
                     if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0) {
-                        currentHarmony.push(lines[i].substring(0, 3));
+                        /*
+                            Set note length in seconds
+                            tempo/beat = How many bars are played in 1 minute (60 seconds)
+                            60/(tempo/beat) = How many seconds is played 1 bar
+                            (60/(tempo/beat))/toneLength = How many seconds is played the note
+                        */
+                        currentNoteLength = parseInt(lines[i].substring(1, 3));
+                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+                        currentHarmony.push(currentNoteTime);
                         // Check fret numbers
                         if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
                             currentHarmony.push(lines[i].substring(4, 8));
@@ -307,40 +364,135 @@ function readTabsFile(file) {
 }
 
 playBtnEl.addEventListener("click", function() {
-    playAudio();
+    try {
+        playAudio();
+    } catch(e) {
+        errorTextEl.textContent = e;
+    }
 })
 
-function playAudio () {
-    let currentNoteAudio = new Audio();
-    let currentNoteLength;
-    let currentNoteTime;
+stopBtnEl.addEventListener("click", function() {
+    if (isPlaying) {
+        stopRequest = true;
+    }
+})
+
+const timer = ms => new Promise(res => setTimeout(res, ms));
+
+async function playAudio () {
+    //let currentNoteUrl;
+    //const audioCtx = new AudioContext();
+    //const request = new XMLHttpRequest();
+
+    isPlaying = true;
+    
     if (parsed) {
         for (let bar = 0; bar < tabsArray.length; bar++) {
             for (let harmony = 0; harmony < tabsArray[bar].length; harmony++) {
-                switch (tabsArray[bar][harmony].length) {
-                    // 1 string played at once
-                    case 2:
-                        currentNoteAudio.src = `sounds/${tabsArray[bar][harmony][1]}.wav`;
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(tabsArray[bar][harmony][0].substring(1));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength)*1000;
-                        setTimeout(function() {
+                if (!stopRequest) {
+                    switch (tabsArray[bar][harmony].length) {
+                        // TODO: vice strun zaraz
+                        // 1 string played at once
+                        case 2:
+                            //let currentNoteAudio = new Audio();
+                            //currentNoteAudio.src = `sounds/${tabsArray[bar][harmony][1]}.wav`;
+                            
+                            
+                            /*
                             currentNoteAudio.play();
-
-                            setTimeout(function(){
+                            wait(currentNoteTime);
+    
+                            function wait(ms){
+                                let start = new Date().getTime();
+                                let end = start;
+                                while(end < start + ms) {
+                                  end = new Date().getTime();
+                               }
+                             }
+                            */
+                            /*
+                            play();
+                            async function play() {
+                                currentNoteAudio.play();
+                                const delay = ms => new Promise(res => setTimeout(res, ms));
+                                await delay(currentNoteTime);
+                                //await setTimeout(currentNoteTime)
                                 currentNoteAudio.pause();
-                                currentNoteAudio.currentTime = 0;
-                            }, currentNoteTime);
-                        }, 0);
-                        break;
-
+                            }
+                            */
+                            
+                            /*
+                            currentNoteUrl = `sounds/${tabsArray[bar][harmony][1]}.wav`;
+    
+                            const request = new XMLHttpRequest();
+                            request.open("GET", currentNoteUrl, true);
+                            request.responseType = "arraybuffer";
+                            request.onload = function() {
+                                //console.log("I am here", bar, harmony)
+                                let undecodedAudio = request.response;
+                                audioCtx.decodeAudioData(undecodedAudio, onDecoded);
+                            };
+                            
+                            function onDecoded(buffer) {
+                                const source = audioCtx.createBufferSource();
+                                source.buffer = buffer;
+                                
+                                source.connect(audioCtx.destination);
+                                source.start(0, 0, tabsArray[bar][harmony][0]);
+                            }
+                            request.send();
+                            */
+    
+                            // Returns a Promise that resolves after "ms" Milliseconds
+                            
+                            
+                            console.log(tabsArray[bar][harmony][1]);
+                            
+                            // use XHR to load an audio track, and
+                            // decodeAudioData to decode it and stick it in a buffer.
+                            // Then we put the buffer into the source
+    
+                            getAudioData(`sounds/${tabsArray[bar][harmony][1]}.wav`);
+                            source.start(0, 0, tabsArray[bar][harmony][0]);
+                            playBtnEl.setAttribute("disabled", "disabled");
+                            await timer(tabsArray[bar][harmony][0]*1000);
+                            break;
+                    }
                 }
             }
         }
     }
+    else {
+        throw "Soubor s taby ještě nebyl zpracován nebo je poškozený. Zkuste obnovit stránku.";
+    }
+    isPlaying = false;
+    stopRequest = false;
+    playBtnEl.removeAttribute("disabled");
+}
+
+function getAudioData(path) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    source = audioCtx.createBufferSource();
+    const request = new XMLHttpRequest();
+
+    request.open("GET", path, true);
+
+    request.responseType = "arraybuffer";
+
+    request.onload = () => {
+    const audioData = request.response;
+
+    audioCtx.decodeAudioData(
+        audioData,
+        (buffer) => {
+        source.buffer = buffer;
+
+        source.connect(audioCtx.destination);
+        },
+
+        (err) => console.error(`Error with decoding audio data: ${err.err}`)
+    );
+    };
+
+    request.send();
 }
