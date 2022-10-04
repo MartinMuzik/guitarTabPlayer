@@ -4,12 +4,18 @@ const errorTextEl = document.getElementById("error-text");
 
 // TODO: pak odstranit a volat funkci rovnou s nazvem skladby z jineho souboru
 //const tabSource = "tabs/test.txt";
-const tabSource = "tabs/aMollPentatonic.txt";
+//const tabSource = "tabs/aMollPentatonic.txt";
+//const tabSource = "tabs/allNotes.txt";
+//const tabSource = "tabs/furElise.txt";
+const tabSource = "tabs/arcticMonkeys.txt";
+const noteRegExp = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
+const noteLengthRegExp = new RegExp(/^:((0[1248])|16|32)$/);
+
 let artist;
 let songName;
-let author;
 let tempo;
 let beat;
+
 
 let tabsArray = [];
 let isFileCorrect = true;
@@ -26,7 +32,6 @@ try {
     console.log(tabsArray);
     console.log(artist);
     console.log(songName);
-    console.log(author);
     console.log(tempo);
     console.log(beat);
 }
@@ -54,7 +59,7 @@ function parseTabs(file) {
             tabsArray.push(currentBar);
             currentBar = [];
         }
-        else if(i < 5) {
+        else if(i < 4) {
             switch(i) {
                 case 0:
                     artist = lines[i];
@@ -63,9 +68,6 @@ function parseTabs(file) {
                     songName = lines[i];
                     break;
                 case 2:
-                    author = lines[i];
-                    break;
-                case 3:
                     if (!isNaN(lines[i]) && parseInt(lines[i]) > 0 && parseInt(lines[i]) < 200) {
                         tempo = parseInt(lines[i]);
                     }
@@ -73,7 +75,7 @@ function parseTabs(file) {
                         isFileCorrect = false;
                     }
                     break;
-                case 4:
+                case 3:
                     if (!isNaN(lines[i]) && parseInt(lines[i]) > 0 && parseInt(lines[i]) < 40) {
                         beat = parseInt(lines[i]);
                     }
