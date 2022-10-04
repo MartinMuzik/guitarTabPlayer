@@ -3,11 +3,11 @@ const stopBtnEl = document.getElementById("stop-btn");
 const errorTextEl = document.getElementById("error-text");
 
 // TODO: pak odstranit a volat funkci rovnou s nazvem skladby z jineho souboru
-//const tabSource = "tabs/test.txt";
+const tabSource = "tabs/test.txt";
 //const tabSource = "tabs/aMollPentatonic.txt";
 //const tabSource = "tabs/allNotes.txt";
 //const tabSource = "tabs/furElise.txt";
-const tabSource = "tabs/arcticMonkeys.txt";
+//const tabSource = "tabs/arcticMonkeys.txt";
 const noteRegExp = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
 const noteLengthRegExp = new RegExp(/^:((0[1248])|16|32)$/);
 
@@ -88,14 +88,14 @@ function parseTabs(file) {
         else {
             let currentHarmony = []; // current note(s) 
             
-            //TODO: Nahradit podminky regularnimi vyrazy, vcetne : na zacatku, cisla struny a _
+            //TODO: Nahradit podminky regularnimi vyrazy (case 8 hotovo)
             //TODO: Nahradit for cyklem - zkratit
             //Select how many notes (strings) are played at once (max 6)
             switch(lines[i].length) {
                 // 1 string
                 case 8:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -106,7 +106,7 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret number
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
                         }
                         else {
@@ -120,7 +120,7 @@ function parseTabs(file) {
                 // 2 strings
                 case 13:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -131,9 +131,9 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret numbers
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
-                            if (!isNaN(lines[i].substring(11, 13)) && parseInt(lines[i].substring(11, 13)) >= 0 && parseInt(lines[i].substring(11, 13)) < 21) {
+                            if (noteRegExp.test(lines[i].substring(9, 13))) {
                                 currentHarmony.push(lines[i].substring(9, 13));
                             }
                             else {
@@ -151,7 +151,7 @@ function parseTabs(file) {
                 // 3 strings
                 case 18:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                           /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -162,11 +162,11 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret numbers
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
-                            if (!isNaN(lines[i].substring(11, 13)) && parseInt(lines[i].substring(11, 13)) >= 0 && parseInt(lines[i].substring(11, 13)) < 21) {
+                            if (noteRegExp.test(lines[i].substring(9, 13))) {
                                 currentHarmony.push(lines[i].substring(9, 13));
-                                if (!isNaN(lines[i].substring(16, 18)) && parseInt(lines[i].substring(16, 18)) >= 0 && parseInt(lines[i].substring(16, 18)) < 21) {
+                                if (noteRegExp.test(lines[i].substring(14, 18))) {
                                     currentHarmony.push(lines[i].substring(14, 18));
                                 }
                                 else {
@@ -188,7 +188,7 @@ function parseTabs(file) {
                 // 4 strings
                 case 23:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -199,13 +199,13 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret numbers
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
-                            if (!isNaN(lines[i].substring(11, 13)) && parseInt(lines[i].substring(11, 13)) >= 0 && parseInt(lines[i].substring(11, 13)) < 21) {
+                            if (noteRegExp.test(lines[i].substring(9, 13))) {
                                 currentHarmony.push(lines[i].substring(9, 13));
-                                if (!isNaN(lines[i].substring(16, 18)) && parseInt(lines[i].substring(16, 18)) >= 0 && parseInt(lines[i].substring(16, 18)) < 21) {
+                                if (noteRegExp.test(lines[i].substring(14, 18))) {
                                     currentHarmony.push(lines[i].substring(14, 18));
-                                    if (!isNaN(lines[i].substring(21, 23)) && parseInt(lines[i].substring(21, 23)) >= 0 && parseInt(lines[i].substring(21, 23)) < 21) {
+                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
                                         currentHarmony.push(lines[i].substring(19, 23));
                                     }
                                     else {
@@ -231,7 +231,7 @@ function parseTabs(file) {
                 // 5 strings
                 case 28:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -242,15 +242,15 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret numbers
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
-                            if (!isNaN(lines[i].substring(11, 13)) && parseInt(lines[i].substring(11, 13)) >= 0 && parseInt(lines[i].substring(11, 13)) < 21) {
+                            if (noteRegExp.test(lines[i].substring(9, 13))) {
                                 currentHarmony.push(lines[i].substring(9, 13));
-                                if (!isNaN(lines[i].substring(16, 18)) && parseInt(lines[i].substring(16, 18)) >= 0 && parseInt(lines[i].substring(16, 18)) < 21) {
+                                if (noteRegExp.test(lines[i].substring(14, 18))) {
                                     currentHarmony.push(lines[i].substring(14, 18));
-                                    if (!isNaN(lines[i].substring(21, 23)) && parseInt(lines[i].substring(21, 23)) >= 0 && parseInt(lines[i].substring(21, 23)) < 21) {
+                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
                                         currentHarmony.push(lines[i].substring(19, 23));
-                                        if (!isNaN(lines[i].substring(26, 28)) && parseInt(lines[i].substring(26, 28)) >= 0 && parseInt(lines[i].substring(26, 28)) < 21) {
+                                        if (noteRegExp.test(lines[i].substring(24, 28))) {
                                             currentHarmony.push(lines[i].substring(24, 28));
                                         }
                                         else {
@@ -280,7 +280,7 @@ function parseTabs(file) {
                 // 6 strings
                 case 33:
                     // Check note length
-                    if (!isNaN(lines[i].substring(1, 3)) && parseInt(lines[i].substring(1, 3)) > 0 && parseInt(lines[i].substring(1, 3)) <= 32) {
+                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
                         /*
                             Set note length in seconds
                             tempo/beat = How many bars are played in 1 minute (60 seconds)
@@ -291,17 +291,17 @@ function parseTabs(file) {
                         currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
                         currentHarmony.push(currentNoteTime);
                         // Check fret numbers
-                        if (!isNaN(lines[i].substring(6, 8)) && parseInt(lines[i].substring(6, 8)) >= 0 && parseInt(lines[i].substring(6, 8)) < 21) {
+                        if (noteRegExp.test(lines[i].substring(4, 8))) {
                             currentHarmony.push(lines[i].substring(4, 8));
-                            if (!isNaN(lines[i].substring(11, 13)) && parseInt(lines[i].substring(11, 13)) >= 0 && parseInt(lines[i].substring(11, 13)) < 21) {
+                            if (noteRegExp.test(lines[i].substring(9, 13))) {
                                 currentHarmony.push(lines[i].substring(9, 13));
-                                if (!isNaN(lines[i].substring(16, 18)) && parseInt(lines[i].substring(16, 18)) >= 0 && parseInt(lines[i].substring(16, 18)) < 21) {
+                                if (noteRegExp.test(lines[i].substring(14, 18))) {
                                     currentHarmony.push(lines[i].substring(14, 18));
-                                    if (!isNaN(lines[i].substring(21, 23)) && parseInt(lines[i].substring(21, 23)) >= 0 && parseInt(lines[i].substring(21, 23)) < 21) {
+                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
                                         currentHarmony.push(lines[i].substring(19, 23));
-                                        if (!isNaN(lines[i].substring(26, 28)) && parseInt(lines[i].substring(26, 28)) >= 0 && parseInt(lines[i].substring(26, 28)) < 21) {
+                                        if (noteRegExp.test(lines[i].substring(24, 28))) {
                                             currentHarmony.push(lines[i].substring(24, 28));
-                                            if (!isNaN(lines[i].substring(31, 33)) && parseInt(lines[i].substring(31, 33)) >= 0 && parseInt(lines[i].substring(31, 33)) < 21) {
+                                            if (noteRegExp.test(lines[i].substring(29, 33))) {
                                                 currentHarmony.push(lines[i].substring(29, 33));
                                             }
                                             else {
