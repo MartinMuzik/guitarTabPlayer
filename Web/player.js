@@ -3,11 +3,11 @@ const stopBtnEl = document.getElementById("stop-btn");
 const errorTextEl = document.getElementById("error-text");
 
 // TODO: pak odstranit a volat funkci rovnou s nazvem skladby z jineho souboru
-const tabSource = "tabs/test.txt";
+//const tabSource = "tabs/test.txt";
 //const tabSource = "tabs/aMollPentatonic.txt";
 //const tabSource = "tabs/allNotes.txt";
 //const tabSource = "tabs/furElise.txt";
-//const tabSource = "tabs/arcticMonkeys.txt";
+const tabSource = "tabs/arcticMonkeys.txt";
 const noteRegExp = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
 const noteLengthRegExp = new RegExp(/^:((0[1248])|16|32)$/);
 
@@ -50,6 +50,7 @@ function parseTabs(file) {
     let currentBar = [];
     let currentNoteLength;
     let currentNoteTime;
+    let currentStringQuantity;
 
     for (let i = 0; i < lines.length; i++) {
         if (!isFileCorrect) {
@@ -86,256 +87,43 @@ function parseTabs(file) {
             }
         }
         else {
-            let currentHarmony = []; // current note(s) 
+            currentHarmony = []; // current note(s) 
             
-            //TODO: Nahradit podminky regularnimi vyrazy (case 8 hotovo)
-            //TODO: Nahradit for cyklem - zkratit
             //Select how many notes (strings) are played at once (max 6)
             switch(lines[i].length) {
                 // 1 string
                 case 8:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret number
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 1;
                     break;
                 // 2 strings
                 case 13:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret numbers
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                            if (noteRegExp.test(lines[i].substring(9, 13))) {
-                                currentHarmony.push(lines[i].substring(9, 13));
-                            }
-                            else {
-                                isFileCorrect = false;
-                            }
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 2;
                     break;
                 // 3 strings
                 case 18:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                          /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret numbers
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                            if (noteRegExp.test(lines[i].substring(9, 13))) {
-                                currentHarmony.push(lines[i].substring(9, 13));
-                                if (noteRegExp.test(lines[i].substring(14, 18))) {
-                                    currentHarmony.push(lines[i].substring(14, 18));
-                                }
-                                else {
-                                    isFileCorrect = false;
-                                }
-                            }
-                            else {
-                                isFileCorrect = false;
-                            }
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 3;
                     break;
                 // 4 strings
                 case 23:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret numbers
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                            if (noteRegExp.test(lines[i].substring(9, 13))) {
-                                currentHarmony.push(lines[i].substring(9, 13));
-                                if (noteRegExp.test(lines[i].substring(14, 18))) {
-                                    currentHarmony.push(lines[i].substring(14, 18));
-                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
-                                        currentHarmony.push(lines[i].substring(19, 23));
-                                    }
-                                    else {
-                                        isFileCorrect = false;
-                                    }
-                                }
-                                else {
-                                    isFileCorrect = false;
-                                }
-                            }
-                            else {
-                                isFileCorrect = false;
-                            }
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 4;
                     break;
                 // 5 strings
                 case 28:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret numbers
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                            if (noteRegExp.test(lines[i].substring(9, 13))) {
-                                currentHarmony.push(lines[i].substring(9, 13));
-                                if (noteRegExp.test(lines[i].substring(14, 18))) {
-                                    currentHarmony.push(lines[i].substring(14, 18));
-                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
-                                        currentHarmony.push(lines[i].substring(19, 23));
-                                        if (noteRegExp.test(lines[i].substring(24, 28))) {
-                                            currentHarmony.push(lines[i].substring(24, 28));
-                                        }
-                                        else {
-                                            isFileCorrect = false;
-                                        }
-                                    }
-                                    else {
-                                        isFileCorrect = false;
-                                    }
-                                }
-                                else {
-                                    isFileCorrect = false;
-                                }
-                            }
-                            else {
-                                isFileCorrect = false;
-                            }
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 5;
                     break;
                 // 6 strings
                 case 33:
-                    // Check note length
-                    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
-                        /*
-                            Set note length in seconds
-                            tempo/beat = How many bars are played in 1 minute (60 seconds)
-                            60/(tempo/beat) = How many seconds is played 1 bar
-                            (60/(tempo/beat))/toneLength = How many seconds is played the note
-                        */
-                        currentNoteLength = parseInt(lines[i].substring(1, 3));
-                        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-                        currentHarmony.push(currentNoteTime);
-                        // Check fret numbers
-                        if (noteRegExp.test(lines[i].substring(4, 8))) {
-                            currentHarmony.push(lines[i].substring(4, 8));
-                            if (noteRegExp.test(lines[i].substring(9, 13))) {
-                                currentHarmony.push(lines[i].substring(9, 13));
-                                if (noteRegExp.test(lines[i].substring(14, 18))) {
-                                    currentHarmony.push(lines[i].substring(14, 18));
-                                    if (noteRegExp.test(lines[i].substring(19, 23))) {
-                                        currentHarmony.push(lines[i].substring(19, 23));
-                                        if (noteRegExp.test(lines[i].substring(24, 28))) {
-                                            currentHarmony.push(lines[i].substring(24, 28));
-                                            if (noteRegExp.test(lines[i].substring(29, 33))) {
-                                                currentHarmony.push(lines[i].substring(29, 33));
-                                            }
-                                            else {
-                                                isFileCorrect = false;
-                                            }
-                                        }
-                                        else {
-                                            isFileCorrect = false;
-                                        }
-                                    }
-                                    else {
-                                        isFileCorrect = false;
-                                    }
-                                }
-                                else {
-                                    isFileCorrect = false;
-                                }
-                            }
-                            else {
-                                isFileCorrect = false;
-                            }
-                        }
-                        else {
-                            isFileCorrect = false;
-                        }
-                    }
-                    else {
-                        isFileCorrect = false;
-                    }
+                    currentStringQuantity = 6;
                     break;
                 default:
                   isFileCorrect = false;
             }
-            currentBar.push(currentHarmony);
+            if (isFileCorrect) {
+                let currentHarmony = parseHarmony(currentStringQuantity, lines, i);
+                if (currentHarmony != null) {
+                    currentBar.push(currentHarmony);
+                }
+            }
         }
     }
     if (isFileCorrect) {
@@ -363,6 +151,36 @@ function readTabsFile(file) {
     }
     isFileCorrect = false;
     throw "Soubor s taby nebyl nalezen.";
+}
+
+function parseHarmony(stringQuantity, lines, i) {
+    let currentHarmony = [];
+    let currentNoteLength;
+    let currentNoteTime;
+
+    if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
+        /*
+            Set note length in seconds
+            tempo/beat = How many bars are played in 1 minute (60 seconds)
+            60/(tempo/beat) = How many seconds is played 1 bar
+            (60/(tempo/beat))/toneLength = How many seconds is played the note
+        */
+        currentNoteLength = parseInt(lines[i].substring(1, 3));
+        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
+        currentHarmony.push(currentNoteTime);
+        // Check fret numbers
+        for (let j = 0; j < stringQuantity; j++) {
+            let substringIndex = (4 + 5 * (j));
+            if (noteRegExp.test(lines[i].substring(substringIndex, substringIndex + 4))) {
+                currentHarmony.push(lines[i].substring(substringIndex, substringIndex + 4));
+            }
+        }
+        if (currentHarmony.length == stringQuantity + 1) {
+            return currentHarmony;
+        } 
+    }
+    isFileCorrect = false;
+    return null;
 }
 
 playBtnEl.addEventListener("click", function() {
