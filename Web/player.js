@@ -1,6 +1,8 @@
 const playBtnEl = document.getElementById("play-btn");
 const stopBtnEl = document.getElementById("stop-btn");
 const errorTextEl = document.getElementById("error-text");
+const tempoSliderEl = document.getElementById("tempo-slider");
+const tempoTextEl = document.getElementById("tempo-text");
 
 // TODO: pak odstranit a volat funkci rovnou s nazvem skladby z jineho souboru
 //const tabSource = "tabs/test.txt";
@@ -13,6 +15,7 @@ const noteLengthRegExp = new RegExp(/^:((0[1248])|16|32)$/);
 
 let artist;
 let songName;
+let originalTempo;
 let tempo;
 let beat;
 
@@ -48,8 +51,6 @@ function parseTabs(file) {
     let tabsString = readTabsFile(tabSource);
     let lines = tabsString.split("\r\n");
     let currentBar = [];
-    let currentNoteLength;
-    let currentNoteTime;
     let currentStringQuantity;
 
     for (let i = 0; i < lines.length; i++) {
@@ -69,8 +70,10 @@ function parseTabs(file) {
                     songName = lines[i];
                     break;
                 case 2:
-                    if (!isNaN(lines[i]) && parseInt(lines[i]) > 0 && parseInt(lines[i]) < 200) {
+                    if (!isNaN(lines[i]) && parseInt(lines[i]) >= 40 && parseInt(lines[i]) <= 240) {
+                        originalTempo = parseInt(lines[i]);
                         tempo = parseInt(lines[i]);
+                        setTempo();
                     }
                     else {
                         isFileCorrect = false;
@@ -156,7 +159,7 @@ function readTabsFile(file) {
 function parseHarmony(stringQuantity, lines, i) {
     let currentHarmony = [];
     let currentNoteLength;
-    let currentNoteTime;
+    let currentNoteDuration;
 
     if (noteLengthRegExp.test(lines[i].substring(0, 3))) {
         /*
@@ -166,8 +169,8 @@ function parseHarmony(stringQuantity, lines, i) {
             (60/(tempo/beat))/toneLength = How many seconds is played the note
         */
         currentNoteLength = parseInt(lines[i].substring(1, 3));
-        currentNoteTime = ((60/(tempo/beat))/currentNoteLength);
-        currentHarmony.push(currentNoteTime);
+        currentNoteDuration = ((60/(tempo/beat))/currentNoteLength);
+        currentHarmony.push(currentNoteDuration);
         // Check fret numbers
         for (let j = 0; j < stringQuantity; j++) {
             let substringIndex = (4 + 5 * (j));
@@ -175,7 +178,8 @@ function parseHarmony(stringQuantity, lines, i) {
                 currentHarmony.push(lines[i].substring(substringIndex, substringIndex + 4));
             }
         }
-        if (currentHarmony.length == stringQuantity + 1) {
+        currentHarmony.push(parseInt(lines[i].substring(1, 3)));  // for tempo change feature
+        if (currentHarmony.length == stringQuantity + 2) {
             return currentHarmony;
         } 
     }
@@ -197,6 +201,15 @@ stopBtnEl.addEventListener("click", function() {
     }
 })
 
+tempoSliderEl.addEventListener("input", function() {
+    tempo = tempoSliderEl.value;
+    setTempo();
+})
+
+function setTempo() {
+    tempoTextEl.innerHTML = `Tempo: ${tempo}`;
+}
+
 const timer = ms => new Promise(res => setTimeout(res, ms));
 
 async function playAudio () {
@@ -207,10 +220,22 @@ async function playAudio () {
     isPlaying = true;
     
     if (parsed) {
+        if (originalTempo != tempo) {
+            let currentNoteLength;
+            let newNoteDuration;
+            // change note duration according to the new tempo
+            for (let i = 0; i < tabsArray.length; i++) {
+                for (let j = 0; j < tabsArray[i].length; j++) {
+                    currentNoteLength = tabsArray[i][j][tabsArray[i][j].length - 1];
+                    newNoteDuration = ((60/(tempo/beat))/currentNoteLength);
+                    tabsArray[i][j][0] = newNoteDuration;
+                }
+            }
+        }
         for (let bar = 0; bar < tabsArray.length; bar++) {
             for (let harmony = 0; harmony < tabsArray[bar].length; harmony++) {
                 if (!stopRequest) {
-                    switch (tabsArray[bar][harmony].length) {
+                    switch (tabsArray[bar][harmony].length - 1) {
                         // TODO: vice strun zaraz
                         // 1 string played at once
                         case 2:
@@ -220,7 +245,7 @@ async function playAudio () {
                             
                             /*
                             currentNoteAudio.play();
-                            wait(currentNoteTime);
+                            wait(currentNoteDuration);
     
                             function wait(ms){
                                 let start = new Date().getTime();
@@ -235,8 +260,8 @@ async function playAudio () {
                             async function play() {
                                 currentNoteAudio.play();
                                 const delay = ms => new Promise(res => setTimeout(res, ms));
-                                await delay(currentNoteTime);
-                                //await setTimeout(currentNoteTime)
+                                await delay(currentNoteDuration);
+                                //await setTimeout(currentNoteDuration)
                                 currentNoteAudio.pause();
                             }
                             */
@@ -264,7 +289,6 @@ async function playAudio () {
                             */
     
                             // Returns a Promise that resolves after "ms" Milliseconds
-                            
                             
                             console.log(tabsArray[bar][harmony][1]);
                             
@@ -305,6 +329,8 @@ function getAudioData(path) {
     audioCtx.decodeAudioData(
         audioData,
         (buffer) => {
+            
+        // may throw error (probably when audio not loaded in time)
         source.buffer = buffer;
 
         source.connect(audioCtx.destination);
