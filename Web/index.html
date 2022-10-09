@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Přehrávač tabů</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Přehrávač tabů</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
-    <label for="tempo" id="tempo-text">Tempo: 80</label> <br>  
-    <input type="range" min="40" max="240" value="80" id="tempo-slider">
-    <button id="play-btn">Přehrát</button>
-    <button id="stop-btn">Zastavit</button>
-    <h3 id="error-text"></h3>
-    <script src="player.js"></script>
+  <label for="song-selector">Vyberte skladbu:</label>
+  <select name="song-selector" id="song-selector">
+    <option value="tabs/arctic_monkeys.txt">Do I wanna know?</option>
+    <option value="tabs/fur_elise.txt">Fur Elise</option>
+    <option value="tabs/a_moll_pentatonic.txt">A Moll pentatonic</option>
+    <option value="tabs/all_notes.txt">All notes</option>
+    <option value="tabs/test.txt">Test</option>
+  </select> <br>
+  <h4 id="song-info-text"></h4>
+  <label for="tempo" id="tempo-text">Tempo: 80</label> <br>  
+  <input type="range" min="40" max="240" value="80" id="tempo-slider">
+  <button id="play-btn">Přehrát</button>
+  <button id="stop-btn">Zastavit</button>
+  <h3 id="error-text"></h3>
+  <script src="player.js"></script>
 
-    <!-- experimental
-    <button id="test-play">Play (test)</button>
-    <button id="test-stop">Stop (test)</button>
-    <script src="test.js"></script>
-    -->
+  <!-- experimental
+  <button id="test-play">Play (test)</button>
+  <button id="test-stop">Stop (test)</button>
+  <script src="test.js"></script>
+  -->
 </body>
 </html>

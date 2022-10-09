@@ -1,46 +1,36 @@
 const PLAY_BUTTON_ELEMENT = document.getElementById("play-btn");
 const STOP_BUTTON_ELEMENT = document.getElementById("stop-btn");
+const SONG_INFO_TEXT_ELEMENT = document.getElementById("song-info-text");
 const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
 const TEMPO_SLIDER_ELEMENT = document.getElementById("tempo-slider");
 const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
-
-// TODO: remove and call from the specific file with source url
-//const TAB_SOURCE = "tabs/test.txt";
-//const TAB_SOURCE = "tabs/a_moll_pentatonic.txt";
-//const TAB_SOURCE = "tabs/all_notes.txt";
-//const TAB_SOURCE = "tabs/fur_elise.txt";
-const TAB_SOURCE = "tabs/arctic_monkeys.txt";
+const SONG_SELECTOR_ELEMENT = document.getElementById("song-selector");
 const NOTE_REG_EXP = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
 const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
 const timer = ms => new Promise(res => setTimeout(res, ms));
 
+let tab_source = SONG_SELECTOR_ELEMENT.value;
 let artist;
 let songName;
 let originalTempo;
 let currentTempo;
 let beat;
 
-let tabsArray = []; // Array containing parsed tab data
+// Array containing parsed tab data
+// Format: [bar][note/harmony][note duration, note,..., note length]
+let parsedTab = [];
+// Array containing names of all notes used in current song  
+let usedNotes = [];
 let isFileCorrect = true;
 let isParsed = false;
-
-let audioCtx;
-let audioSource;
 let stopRequest = false;
 let isPlaying = false;
 
-try {
-  parseTabs(TAB_SOURCE);
-  // Debug outputs
-  console.log(tabsArray);
-  console.log(artist);
-  console.log(songName);
-  console.log(currentTempo);
-  console.log(beat);
-} catch(e) {
-  ERROR_TEXT_ELEMENT.textContent = e;
-}
+let audioCtx;
+let audioSource;
+
+loadSong();
 
 PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
   try {
@@ -58,13 +48,39 @@ STOP_BUTTON_ELEMENT.addEventListener("click", function() {
   
 TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
   currentTempo = TEMPO_SLIDER_ELEMENT.value;
-    setTempo();
+  setTempo();
 });
+
+SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
+  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
+  loadSong();
+  SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
+});
+
+// Load song - call this method first to start
+function loadSong() {
+    try {
+      tab_source = SONG_SELECTOR_ELEMENT.value;
+      parseTabs(tab_source);
+      SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
+                                      (original: ${originalTempo} BPM)`;
+      // Debug outputs
+      // console.log(parsedTab);
+      // console.log(artist);
+      // console.log(songName);
+      // console.log(currentTempo);
+      // console.log(beat);
+    } catch(e) {
+      ERROR_TEXT_ELEMENT.textContent = e;
+    }
+    getAllUsedNotes();
+  }
 
 // Parameter file: url of text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
-  let tabs = readTabsFile(TAB_SOURCE).split("\r\n");
+  parsedTab = [] // clear loaded tabs
+  let tabs = readTabsFile(tab_source).split("\r\n");
   let currentBar = [];
   let currentStringQuantity;
 
@@ -74,7 +90,7 @@ function parseTabs(file) {
     }
 
     if (tabs[i] == "|") {
-      tabsArray.push(currentBar);
+      parsedTab.push(currentBar);
       currentBar = [];
     }
     else if(i < 4) {
@@ -207,6 +223,10 @@ function setTempo() {
   TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo}`;
 }
 
+function getAllUsedNotes() {
+    // console.log("TODO: Finish this function");
+}
+
 // TODO: Enhance, add comments
 async function playAudio () {
   //let currentNoteUrl;
@@ -216,6 +236,7 @@ async function playAudio () {
   isPlaying = true;
   PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
   TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
+  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
  
   if (isParsed) {
     // Change note duration according to the new tempo
@@ -223,19 +244,19 @@ async function playAudio () {
       let currentNoteLength;
       let newNoteDuration;
 
-      for (let i = 0; i < tabsArray.length; i++) {
-        for (let j = 0; j < tabsArray[i].length; j++) {
-          currentNoteLength = tabsArray[i][j][tabsArray[i][j].length - 1];
+      for (let i = 0; i < parsedTab.length; i++) {
+        for (let j = 0; j < parsedTab[i].length; j++) {
+          currentNoteLength = parsedTab[i][j][parsedTab[i][j].length - 1];
           newNoteDuration = ((60/(currentTempo/beat))/currentNoteLength);
-          tabsArray[i][j][0] = newNoteDuration;
+          parsedTab[i][j][0] = newNoteDuration;
         }
       }
     }
 
-    for (let bar = 0; bar < tabsArray.length; bar++) {
-      for (let harmony = 0; harmony < tabsArray[bar].length; harmony++) {
+    for (let bar = 0; bar < parsedTab.length; bar++) {
+      for (let harmony = 0; harmony < parsedTab[bar].length; harmony++) {
         if (!stopRequest) {
-          switch (tabsArray[bar][harmony].length - 1) {
+          switch (parsedTab[bar][harmony].length - 1) {
             // TODO: Add cases for more strings in harmony
             case 2: // 1 string played at once
               //let currentNoteAudio = new Audio();
@@ -286,10 +307,10 @@ async function playAudio () {
                 request.send();
               */
                             
-              console.log(tabsArray[bar][harmony][1]);     
-              getAudioData(`sounds/${tabsArray[bar][harmony][1]}.wav`);
-              audioSource.start(0, 0, tabsArray[bar][harmony][0]);
-              await timer(tabsArray[bar][harmony][0]*1000);
+              console.log(parsedTab[bar][harmony][1]);     
+              getAudioData(`sounds/${parsedTab[bar][harmony][1]}.wav`);
+              audioSource.start(0, 0, parsedTab[bar][harmony][0]);
+              await timer(parsedTab[bar][harmony][0]*1000);
               break;
           }
         }
@@ -304,6 +325,7 @@ async function playAudio () {
   stopRequest = false;
   PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
   TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
+  SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 }
 
 // Use XHR to load an audio track, and
