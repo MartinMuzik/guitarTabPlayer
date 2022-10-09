@@ -18,9 +18,10 @@ let currentTempo;
 let beat;
 
 // Array containing parsed tab data
-// Format: [bar][note/harmony][note duration, note,..., note length]
+// Format: [measure][note/harmony][note duration, note,..., note length]
 let parsedTab = [];
-// Array containing names of all notes used in current song  
+// Array containing names of all notes used
+// in current song (without repetition) 
 let usedNotes = [];
 let isFileCorrect = true;
 let isParsed = false;
@@ -54,34 +55,41 @@ TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
 SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
   SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
   loadSong();
-  SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 });
 
 // Load song - call this method first to start
 function loadSong() {
-    try {
-      tab_source = SONG_SELECTOR_ELEMENT.value;
-      parseTabs(tab_source);
-      SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
-                                      (original: ${originalTempo} BPM)`;
-      // Debug outputs
-      // console.log(parsedTab);
-      // console.log(artist);
-      // console.log(songName);
-      // console.log(currentTempo);
-      // console.log(beat);
-    } catch(e) {
-      ERROR_TEXT_ELEMENT.textContent = e;
-    }
-    getAllUsedNotes();
+  try {
+    tab_source = SONG_SELECTOR_ELEMENT.value;
+    parseTabs(tab_source);
+    TEMPO_SLIDER_ELEMENT.value = currentTempo;
+    SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
+                                    (original: ${originalTempo} BPM)`;
+    SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
+    // Debug outputs
+    // console.log(parsedTab);
+    // console.log(artist);
+    // console.log(songName);
+    // console.log(currentTempo);
+    // console.log(beat);
+  } catch(e) {
+    ERROR_TEXT_ELEMENT.textContent = e;
+    PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+    STOP_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+    TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
+    SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
+  }
+  
+  getAllUsedNotes();
+  console.log(usedNotes);
   }
 
 // Parameter file: url of text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
-  parsedTab = [] // clear loaded tabs
+  parsedTab = [] // clear from previous tab
   let tabs = readTabsFile(tab_source).split("\r\n");
-  let currentBar = [];
+  let currentMeasure = [];
   let currentStringQuantity;
 
   for (let i = 0; i < tabs.length; i++) {
@@ -90,8 +98,8 @@ function parseTabs(file) {
     }
 
     if (tabs[i] == "|") {
-      parsedTab.push(currentBar);
-      currentBar = [];
+      parsedTab.push(currentMeasure);
+      currentMeasure = [];
     }
     else if(i < 4) {
       switch(i) {
@@ -152,7 +160,7 @@ function parseTabs(file) {
         let currentHarmony = parseHarmony(currentStringQuantity, tabs, i);
 
         if (currentHarmony != null) {
-          currentBar.push(currentHarmony);
+          currentMeasure.push(currentHarmony);
         }
       }
     }
@@ -193,8 +201,8 @@ function parseHarmony(stringQuantity, tabs, i) {
 
   if (NOTE_LENGTH_REG_EXP.test(tabs[i].substring(0, 3))) {
     // Set note length in seconds
-    // tempo/beat = number of bars in 60 seconds
-    // 60/(tempo/beat) = duration of 1 bar in seconds
+    // tempo/beat = number of measures in 60 seconds
+    // 60/(tempo/beat) = duration of 1 measure in seconds
     // (60/(tempo/beat))/toneLength = duration of the note in seconds
     currentNoteLength = parseInt(tabs[i].substring(1, 3));
     currentNoteDuration = ((60/(currentTempo/beat))/currentNoteLength);
@@ -223,8 +231,25 @@ function setTempo() {
   TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo}`;
 }
 
+// Create an array including all used notes
+// in current tab (without repetition)
 function getAllUsedNotes() {
-    // console.log("TODO: Finish this function");
+  usedNotes = []; // clear from previous tab
+  for (let measure = 0; measure < parsedTab.length; measure++) {
+    for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
+      for (let element = 0;
+           element < parsedTab[measure][harmony].length;
+           element++) {
+        // first and last element isn't note
+        if (element != 0 &&
+            element != parsedTab[measure][harmony].length - 1) {
+          if (!usedNotes.includes(parsedTab[measure][harmony][element])) {
+            usedNotes.push(parsedTab[measure][harmony][element]);
+          }
+        }
+      }
+    }
+  }
 }
 
 // TODO: Enhance, add comments
@@ -253,14 +278,14 @@ async function playAudio () {
       }
     }
 
-    for (let bar = 0; bar < parsedTab.length; bar++) {
-      for (let harmony = 0; harmony < parsedTab[bar].length; harmony++) {
+    for (let measure = 0; measure < parsedTab.length; measure++) {
+      for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {
-          switch (parsedTab[bar][harmony].length - 1) {
+          switch (parsedTab[measure][harmony].length - 1) {
             // TODO: Add cases for more strings in harmony
             case 2: // 1 string played at once
               //let currentNoteAudio = new Audio();
-              //currentNoteAudio.src = `sounds/${tabsArray[bar][harmony][1]}.wav`;
+              //currentNoteAudio.src = `sounds/${tabsArray[measure][harmony][1]}.wav`;
                             
               /*
                 currentNoteAudio.play();
@@ -287,7 +312,7 @@ async function playAudio () {
               */
                             
               /*
-                currentNoteUrl = `sounds/${tabsArray[bar][harmony][1]}.wav`;
+                currentNoteUrl = `sounds/${tabsArray[measure][harmony][1]}.wav`;
 
                 const request = new XMLHttpRequest();
                 request.open("GET", currentNoteUrl, true);
@@ -301,16 +326,16 @@ async function playAudio () {
                   const source = audioCtx.createBufferSource();
                   source.buffer = buffer;
                   source.connect(audioCtx.destination);
-                  source.start(0, 0, tabsArray[bar][harmony][0]);
+                  source.start(0, 0, tabsArray[measure][harmony][0]);
                 }
 
                 request.send();
               */
                             
-              console.log(parsedTab[bar][harmony][1]);     
-              getAudioData(`sounds/${parsedTab[bar][harmony][1]}.wav`);
-              audioSource.start(0, 0, parsedTab[bar][harmony][0]);
-              await timer(parsedTab[bar][harmony][0]*1000);
+              console.log(parsedTab[measure][harmony][1]);     
+              getAudioData(`sounds/${parsedTab[measure][harmony][1]}.wav`);
+              audioSource.start(0, 0, parsedTab[measure][harmony][0]);
+              await timer(parsedTab[measure][harmony][0]*1000);
               break;
           }
         }
