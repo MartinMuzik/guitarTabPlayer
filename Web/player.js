@@ -1,3 +1,5 @@
+const URL = window.location.href;
+const LOAD_BUTTON_ELEMENT = document.getElementById("load-btn");
 const PLAY_BUTTON_ELEMENT = document.getElementById("play-btn");
 const STOP_BUTTON_ELEMENT = document.getElementById("stop-btn");
 const SONG_INFO_TEXT_ELEMENT = document.getElementById("song-info-text");
@@ -10,12 +12,14 @@ const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
 const timer = ms => new Promise(res => setTimeout(res, ms));
 
-let tab_source = SONG_SELECTOR_ELEMENT.value;
+let tabSource = SONG_SELECTOR_ELEMENT.value;
 let artist;
 let songName;
 let originalTempo;
 let currentTempo;
 let beat;
+// debug only (execute time measurement)
+let songDuration = 0;
 
 // Array containing parsed tab data
 // Format: [measure][note/harmony][note duration, note,..., note length]
@@ -23,19 +27,31 @@ let parsedTab = [];
 // Array containing names of all notes used
 // in current song (without repetition) 
 let usedNotes = [];
+// Dictionary containing loaded audio buffers which current song needs
+let audioBuffers;
+// AudioContext object
+let audioContext;
+
 let isFileCorrect = true;
 let isParsed = false;
 let stopRequest = false;
 let isPlaying = false;
 
-let audioCtx;
-let audioSource;
+PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+getCookie();
 
-loadSong();
+
+LOAD_BUTTON_ELEMENT.addEventListener("click", function() {
+  audioContext = new AudioContext;
+  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
+  PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+  LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+  loadSong();
+});
 
 PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
   try {
-    playAudio();
+    playSong();
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }
@@ -52,43 +68,47 @@ TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
   setTempo();
 });
 
+
 SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
-  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
-  loadSong();
+  setCookie();
+  // refresh page (to clear cache)
+  document.location.reload();
 });
+
 
 // Load song - call this method first to start
 function loadSong() {
   try {
-    tab_source = SONG_SELECTOR_ELEMENT.value;
-    parseTabs(tab_source);
+    tabSource = SONG_SELECTOR_ELEMENT.value;
+    parseTabs(tabSource);
+    // only debug (time measure)
+    console.log("Song duration: " + songDuration*1000 + "ms");
+
     TEMPO_SLIDER_ELEMENT.value = currentTempo;
     SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
                                     (original: ${originalTempo} BPM)`;
-    SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
-    // Debug outputs
-    // console.log(parsedTab);
-    // console.log(artist);
-    // console.log(songName);
-    // console.log(currentTempo);
-    // console.log(beat);
+    // load all required audio sources
+    getAllUsedNotes();
+    setupAudioFiles(usedNotes).then((response) => {
+      audioBuffers = response;
+      SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
+      PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+    });
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
+    LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
     PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
     STOP_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
     TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
     SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
   }
-  
-  getAllUsedNotes();
-  console.log(usedNotes);
   }
 
 // Parameter file: url of text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
   parsedTab = [] // clear from previous tab
-  let tabs = readTabsFile(tab_source).split("\r\n");
+  let tabs = readTabsFile(tabSource).split("\r\n");
   let currentMeasure = [];
   let currentStringQuantity;
 
@@ -171,6 +191,7 @@ function parseTabs(file) {
 }
 
 // TODO: Find out how it works, or replace it
+// Read text file cointaing tabs with XHR
 function readTabsFile(file) {
   let fileContent;
   let rawFile = new XMLHttpRequest();
@@ -207,6 +228,8 @@ function parseHarmony(stringQuantity, tabs, i) {
     currentNoteLength = parseInt(tabs[i].substring(1, 3));
     currentNoteDuration = ((60/(currentTempo/beat))/currentNoteLength);
     currentHarmony.push(currentNoteDuration);
+    // for debug
+    songDuration += currentNoteDuration;
 
     // Check fret numbers
     for (let j = 0; j < stringQuantity; j++) {
@@ -227,8 +250,9 @@ function parseHarmony(stringQuantity, tabs, i) {
   return null;
 }
 
+// set currentTempo
 function setTempo() {
-  TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo}`;
+  TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo} BPM`;
 }
 
 // Create an array including all used notes
@@ -243,8 +267,11 @@ function getAllUsedNotes() {
         // first and last element isn't note
         if (element != 0 &&
             element != parsedTab[measure][harmony].length - 1) {
-          if (!usedNotes.includes(parsedTab[measure][harmony][element])) {
-            usedNotes.push(parsedTab[measure][harmony][element]);
+          if (!usedNotes.includes("sounds/"+
+              parsedTab[measure][harmony][element] + ".wav")
+            ) {
+            usedNotes.push("sounds/"+
+                            parsedTab[measure][harmony][element] + ".wav");
           }
         }
       }
@@ -252,16 +279,15 @@ function getAllUsedNotes() {
   }
 }
 
-// TODO: Enhance, add comments
-async function playAudio () {
-  //let currentNoteUrl;
-  //const audioCtx = new AudioContext();
-  //const request = new XMLHttpRequest();
-
+// Play audio sources asynchronously according to parsedTab array
+// Each note (audio source) plays for specific time according to note length
+async function playSong () {  
   isPlaying = true;
+  stopRequest = false;
   PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
   TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
   SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
+  LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
  
   if (isParsed) {
     // Change note duration according to the new tempo
@@ -278,69 +304,31 @@ async function playAudio () {
       }
     }
 
+    // debug only (execute time measurement)
+    const start = Date.now();
+
     for (let measure = 0; measure < parsedTab.length; measure++) {
       for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {
           switch (parsedTab[measure][harmony].length - 1) {
             // TODO: Add cases for more strings in harmony
             case 2: // 1 string played at once
-              //let currentNoteAudio = new Audio();
-              //currentNoteAudio.src = `sounds/${tabsArray[measure][harmony][1]}.wav`;
-                            
-              /*
-                currentNoteAudio.play();
-                wait(currentNoteDuration);
-
-                function wait(ms){
-                  let start = new Date().getTime();
-                  let end = start;
-                  while(end < start + ms) {
-                    end = new Date().getTime();
-                  }
-                }
-              */
-
-              /*
-                play();
-                async function play() {
-                  currentNoteAudio.play();
-                  const delay = ms => new Promise(res => setTimeout(res, ms));
-                  await delay(currentNoteDuration);
-                  //await setTimeout(currentNoteDuration)
-                  currentNoteAudio.pause();
-                }
-              */
-                            
-              /*
-                currentNoteUrl = `sounds/${tabsArray[measure][harmony][1]}.wav`;
-
-                const request = new XMLHttpRequest();
-                request.open("GET", currentNoteUrl, true);
-                request.responseType = "arraybuffer";
-                request.onload = function() {
-                  let undecodedAudio = request.response;
-                  audioCtx.decodeAudioData(undecodedAudio, onDecoded);
-                };
-                            
-                function onDecoded(buffer) {
-                  const source = audioCtx.createBufferSource();
-                  source.buffer = buffer;
-                  source.connect(audioCtx.destination);
-                  source.start(0, 0, tabsArray[measure][harmony][0]);
-                }
-
-                request.send();
-              */
-                            
-              console.log(parsedTab[measure][harmony][1]);     
-              getAudioData(`sounds/${parsedTab[measure][harmony][1]}.wav`);
-              audioSource.start(0, 0, parsedTab[measure][harmony][0]);
+              console.log("Current note: " + parsedTab[measure][harmony][1]);
+              // play current note (get audioBuffer by note name, note length)
+              playAudio(audioBuffers[parsedTab[measure][harmony][1]], parsedTab[measure][harmony][0]);
+              // wait till the audio stops playing
               await timer(parsedTab[measure][harmony][0]*1000);
               break;
           }
         }
       }
     }
+
+    // debug only (execute time measurement)
+    const end = Date.now();
+    console.log(`Execution time: ${end - start} ms`);
+    console.log("Delay: " + ((end - start) - songDuration*1000) + "ms");
+    
   } else {
     throw ("Soubor s taby ještě nebyl zpracován nebo je poškozený." +
           " Zkuste obnovit stránku.");
@@ -353,28 +341,47 @@ async function playAudio () {
   SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 }
 
-// Use XHR to load an audio track, and
-// decodeAudioData to decode it and stick it in a buffer.
-// Then we put the buffer into the source.
-function getAudioData(path) {
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  audioSource = audioCtx.createBufferSource();
-  const request = new XMLHttpRequest();
+// Fetch audio file, decode it and stick it in a audioBuffer.
+// return audioBuffer
+async function getAudioFile(path) {
+  const response = await fetch(path);
+  const arrayBuffer = await response.arrayBuffer();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  return audioBuffer;
+}
 
-  request.open("GET", path, true);
-  request.responseType = "arraybuffer";
-  request.onload = () => {
-    const audioData = request.response;
+// setup all audio files from paths array
+async function setupAudioFiles(paths) {
+  console.log("Loading audio...");
+  const audioBuffers = {};
 
-    audioCtx.decodeAudioData(
-      audioData,
-      (buffer) => {  
-        // May throw error (probably when audio not loaded in time)
-        audioSource.buffer = buffer;
-        audioSource.connect(audioCtx.destination);
-      },
-      (err) => console.error(`Error with decoding audio data: ${err.err}`)
-    );
-  };
-  request.send();
+  for (const path of paths) {
+    const currentAudio = await getAudioFile(path);
+    audioBuffers[path.substring(7, 11)] = currentAudio;
+  }
+  console.log("Audio loaded.");
+  return audioBuffers;
+}
+
+// Create audioSource node, stick it to its buffer
+// play it for time duration
+function playAudio(audioBuffer, time) {
+  const audioSource = audioContext.createBufferSource();
+  audioSource.buffer = audioBuffer;
+  audioSource.connect(audioContext.destination);
+  audioSource.start(0, 0, time);
+}
+
+// Load cookie "currentTabSource" and set tabSource
+// Used to switch between songs and don't fill cache with audio sources
+function getCookie() {
+  if (document.cookie != "") {
+    SONG_SELECTOR_ELEMENT.value = document.cookie.substring(17);
+    tabSource = SONG_SELECTOR_ELEMENT.value;
+  }
+}
+
+// set cookie "currentTabSource" value to newly selected song
+function setCookie() {
+  document.cookie = "currentTabSource=" + SONG_SELECTOR_ELEMENT.value;
 }
