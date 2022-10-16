@@ -7,14 +7,14 @@ const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
 const TEMPO_SLIDER_ELEMENT = document.getElementById("tempo-slider");
 const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
 const SONG_SELECTOR_ELEMENT = document.getElementById("song-selector");
-const NOTE_REG_EXP = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
+const NOTE_REG_EXP = new RegExp(/^([1-6]_(([01][0-9])|20))|XXXX$/);
 const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
 const timer = ms => new Promise(res => setTimeout(res, ms));
 // Should represent time (in ms) of processing code between playing each note
 // This devation is then substracted from waiting period
 // before playing next note 
-const DEVIATION = 3;
+const DEVIATION = 3.4;
 
 let tabSource = SONG_SELECTOR_ELEMENT.value;
 let artist;
@@ -312,32 +312,66 @@ async function playSong () {
     for (let measure = 0; measure < parsedTab.length; measure++) {
       for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {
-          switch (parsedTab[measure][harmony].length - 1) {
-            // TODO: Add cases for more strings in harmony
-            case 2: // 1 string played at once
+          switch (parsedTab[measure][harmony].length - 2) {
+            // debug only (print current notes), remove this block later
+            case 1: // 1 string played at once
               console.log("Current note: " + parsedTab[measure][harmony][1]);
-              // play current note (get audioBuffer by note name, note length)
-              playAudio(audioBuffers[parsedTab[measure][harmony][1]], parsedTab[measure][harmony][0]);
-              // wait till the audio stops playing
-              await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
               break;
+            case 2: // 2 strings played at once
+              console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
+                          parsedTab[measure][harmony][2]);
+              break;
+            case 3: // 3 strings played at once
+              console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
+                          parsedTab[measure][harmony][2] + " " +
+                          parsedTab[measure][harmony][3]);
+              break;
+              case 4: // 4 strings played at once
+                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
+                            parsedTab[measure][harmony][2] + " " +
+                            parsedTab[measure][harmony][3] + " " +
+                            parsedTab[measure][harmony][4]);
+                break;
+              case 5: // 5 strings played at once
+                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
+                            parsedTab[measure][harmony][2] + " " +
+                            parsedTab[measure][harmony][3] + " " +
+                            parsedTab[measure][harmony][4] + " " +
+                            parsedTab[measure][harmony][5]);
+                break;
+              case 6: // 6 strings played at once
+                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
+                            parsedTab[measure][harmony][2] + " " +
+                            parsedTab[measure][harmony][3] + " " +
+                            parsedTab[measure][harmony][4] + " " +
+                            parsedTab[measure][harmony][5] + " " +
+                            parsedTab[measure][harmony][6]);
+                break;
           }
+          for (let string = 0; string < parsedTab[measure][harmony].length - 2; string ++) {
+            // play current note (get audioBuffer by note name, note length)
+            playAudio(audioBuffers[parsedTab[measure][harmony][string + 1]],
+              parsedTab[measure][harmony][0]);
+          }
+
+          // wait till the audio stops playing
+          await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
         }
       }
     }
 
     // debug only (execute time measurement)
     const end = Date.now();
-    if(!stopRequest) {
+    if(!stopRequest || currentTempo != originalTempo) {
       console.log(`Execution time: ${end - start} ms`);
       console.log("Delay (from original): " + ((end - start) - songDuration*1000) + "ms");
     } else {
-      console.log("Playing was interrupted, can't calculate delay.");
+      console.log("Can't calculate delay.");
     }
     
   } else {
-    throw ("Soubor s taby ještě nebyl zpracován nebo je poškozený." +
-          " Zkuste obnovit stránku.");
+    ERROR_TEXT_ELEMENT.textContent = "Soubor s taby ještě nebyl zpracován " +
+    "nebo je poškozený. Zkuste obnovit stránku.";
   }
 
   isPlaying = false;
