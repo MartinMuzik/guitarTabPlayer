@@ -283,7 +283,11 @@ function getAllUsedNotes() {
 
 // Play audio sources asynchronously according to parsedTab array
 // Each note (audio source) plays for specific time according to note length
-async function playSong () {  
+async function playSong () {
+  /* for variation using Date
+  // store Date (time) when the next note should start
+  let executeDate = 0;
+  */
   isPlaying = true;
   stopRequest = false;
   PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
@@ -312,8 +316,15 @@ async function playSong () {
     for (let measure = 0; measure < parsedTab.length; measure++) {
       for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {
+          /* for variation using Date
+          if (executeDate !== 0) {
+            // wait till the audio stops playing (using Date for better accurate)
+            await timer(executeDate - Date.now());
+          }
+          */
+         
+          // debug only (print current notes), remove this block later
           switch (parsedTab[measure][harmony].length - 2) {
-            // debug only (print current notes), remove this block later
             case 1: // 1 string played at once
               console.log("Current note: " + parsedTab[measure][harmony][1]);
               break;
@@ -348,17 +359,25 @@ async function playSong () {
                             parsedTab[measure][harmony][6]);
                 break;
           }
+          
           for (let string = 0; string < parsedTab[measure][harmony].length - 2; string ++) {
             // play current note (get audioBuffer by note name, note length)
             playAudio(audioBuffers[parsedTab[measure][harmony][string + 1]],
               parsedTab[measure][harmony][0]);
           }
-
+          
           // wait till the audio stops playing
           await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
+
+          // for variation using Date
+          // executeDate = Date.now() + parsedTab[measure][harmony][0]*1000;
         }
       }
     }
+
+    // for variation using Date
+    // wait till the last audio stops playing
+    // await timer(parsedTab[parsedTab.length - 1][parsedTab[parsedTab.length - 1].length - 1][0]*1000);
 
     // debug only (execute time measurement)
     const end = Date.now();
