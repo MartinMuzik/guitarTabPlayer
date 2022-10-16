@@ -11,6 +11,10 @@ const NOTE_REG_EXP = new RegExp(/^[1-6]_(([01][0-9])|20)$/);
 const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
 const timer = ms => new Promise(res => setTimeout(res, ms));
+// Should represent time (in ms) of processing code between playing each note
+// This devation is then substracted from waiting period
+// before playing next note 
+const DEVIATION = 3;
 
 let tabSource = SONG_SELECTOR_ELEMENT.value;
 let artist;
@@ -50,11 +54,7 @@ LOAD_BUTTON_ELEMENT.addEventListener("click", function() {
 });
 
 PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
-  try {
-    playSong();
-  } catch(e) {
-    ERROR_TEXT_ELEMENT.textContent = e;
-  }
+  playSong();
 });
   
 STOP_BUTTON_ELEMENT.addEventListener("click", function() {
@@ -78,22 +78,10 @@ SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
 
 // Load song - call this method first to start
 function loadSong() {
+  tabSource = SONG_SELECTOR_ELEMENT.value;
+  
   try {
-    tabSource = SONG_SELECTOR_ELEMENT.value;
     parseTabs(tabSource);
-    // only debug (time measure)
-    console.log("Song duration: " + songDuration*1000 + "ms");
-
-    TEMPO_SLIDER_ELEMENT.value = currentTempo;
-    SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
-                                    (original: ${originalTempo} BPM)`;
-    // load all required audio sources
-    getAllUsedNotes();
-    setupAudioFiles(usedNotes).then((response) => {
-      audioBuffers = response;
-      SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
-      PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
-    });
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
     LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
@@ -102,6 +90,20 @@ function loadSong() {
     TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
     SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
   }
+
+  // only debug (time measure)
+  console.log("Song duration (original): " + songDuration*1000 + "ms");
+
+  TEMPO_SLIDER_ELEMENT.value = currentTempo;
+  SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
+                                  (original: ${originalTempo} BPM)`;
+  // load all required audio sources
+  getAllUsedNotes();
+  setupAudioFiles(usedNotes).then((response) => {
+    audioBuffers = response;
+    SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
+    PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+  });
   }
 
 // Parameter file: url of text file containing tabs
@@ -317,7 +319,7 @@ async function playSong () {
               // play current note (get audioBuffer by note name, note length)
               playAudio(audioBuffers[parsedTab[measure][harmony][1]], parsedTab[measure][harmony][0]);
               // wait till the audio stops playing
-              await timer(parsedTab[measure][harmony][0]*1000);
+              await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
               break;
           }
         }
@@ -326,8 +328,12 @@ async function playSong () {
 
     // debug only (execute time measurement)
     const end = Date.now();
-    console.log(`Execution time: ${end - start} ms`);
-    console.log("Delay: " + ((end - start) - songDuration*1000) + "ms");
+    if(!stopRequest) {
+      console.log(`Execution time: ${end - start} ms`);
+      console.log("Delay (from original): " + ((end - start) - songDuration*1000) + "ms");
+    } else {
+      console.log("Playing was interrupted, can't calculate delay.");
+    }
     
   } else {
     throw ("Soubor s taby ještě nebyl zpracován nebo je poškozený." +
