@@ -1,7 +1,6 @@
 Unknown artist
 A moll pentatonic scale
 80
-4
 :08 6_05
 :08 6_08
 :08 5_05
