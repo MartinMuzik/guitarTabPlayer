@@ -2,7 +2,8 @@ const URL = window.location.href;
 const LOAD_BUTTON_ELEMENT = document.getElementById("load-btn");
 const PLAY_BUTTON_ELEMENT = document.getElementById("play-btn");
 const STOP_BUTTON_ELEMENT = document.getElementById("stop-btn");
-const SONG_INFO_TEXT_ELEMENT = document.getElementById("song-info-text");
+const SONG_NAME_TEXT_ELEMENT = document.getElementById("song-name-text");
+const ARTIST_TEXT_ELEMENT = document.getElementById("artist-text");
 const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
 const TEMPO_SLIDER_ELEMENT = document.getElementById("tempo-slider");
 const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
@@ -41,6 +42,7 @@ let stopRequest = false;
 let isPlaying = false;
 
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+STOP_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 getCookie();
 
 
@@ -94,14 +96,15 @@ function loadSong() {
   console.log("Song duration (original): " + songDuration*1000 + "ms");
 
   TEMPO_SLIDER_ELEMENT.value = currentTempo;
-  SONG_INFO_TEXT_ELEMENT.innerHTML = `${artist} - ${songName} 
-                                  (original: ${originalTempo} BPM)`;
+  ARTIST_TEXT_ELEMENT.innerHTML = artist;
+  SONG_NAME_TEXT_ELEMENT.innerHTML = songName;
   // load all required audio sources
   getAllUsedNotes();
   setupAudioFiles(usedNotes).then((response) => {
     audioBuffers = response;
     SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
     PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+    STOP_BUTTON_ELEMENT.removeAttribute("disabled");
   });
   }
 
@@ -243,7 +246,7 @@ function parseHarmony(stringQuantity, tabs, i) {
 
 // set currentTempo
 function setTempo() {
-  TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo} BPM`;
+  TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo} BPM (original: ${originalTempo} BPM)`;
 }
 
 // Create an array including all used notes
