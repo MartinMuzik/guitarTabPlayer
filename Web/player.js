@@ -21,7 +21,6 @@ let artist;
 let songName;
 let originalTempo;
 let currentTempo;
-let beat;
 // debug only (execute time measurement)
 let songDuration = 0;
 
@@ -123,7 +122,7 @@ function parseTabs(file) {
       parsedTab.push(currentMeasure);
       currentMeasure = [];
     }
-    else if(i < 4) {
+    else if(i < 3) {
       switch(i) {
         case 0:
           artist = tabs[i];
@@ -137,14 +136,6 @@ function parseTabs(file) {
             originalTempo = parseInt(tabs[i]);
             currentTempo = parseInt(tabs[i]);
             setTempo();
-          } else {
-            isFileCorrect = false;
-          }
-          break;
-        case 3:
-          if (!isNaN(tabs[i]) && parseInt(tabs[i]) > 0 &&
-              parseInt(tabs[i]) < 40) {
-            beat = parseInt(tabs[i]);
           } else {
             isFileCorrect = false;
           }
@@ -192,7 +183,6 @@ function parseTabs(file) {
   }
 }
 
-// TODO: Find out how it works, or replace it
 // Read text file cointaing tabs with XHR
 function readTabsFile(file) {
   let fileContent;
@@ -224,11 +214,10 @@ function parseHarmony(stringQuantity, tabs, i) {
 
   if (NOTE_LENGTH_REG_EXP.test(tabs[i].substring(0, 3))) {
     // Set note length in seconds
-    // tempo/beat = number of measures in 60 seconds
-    // 60/(tempo/beat) = duration of 1 measure in seconds
-    // (60/(tempo/beat))/toneLength = duration of the note in seconds
+    // 60/currentTempo = duration of 1 quarter note in seconds
+    // (60/currentTempo)/(currentNoteLength/4) = duration of current note in seconds
     currentNoteLength = parseInt(tabs[i].substring(1, 3));
-    currentNoteDuration = ((60/(currentTempo/beat))/currentNoteLength);
+    currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
     currentHarmony.push(currentNoteDuration);
     // for debug
     songDuration += currentNoteDuration;
@@ -304,7 +293,7 @@ async function playSong () {
       for (let i = 0; i < parsedTab.length; i++) {
         for (let j = 0; j < parsedTab[i].length; j++) {
           currentNoteLength = parsedTab[i][j][parsedTab[i][j].length - 1];
-          newNoteDuration = ((60/(currentTempo/beat))/currentNoteLength);
+          newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
           parsedTab[i][j][0] = newNoteDuration;
         }
       }
