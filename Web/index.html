@@ -9,32 +9,40 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="player-head">
-    <label for="song-selector">Vyberte skladbu:</label>
-    <select name="song-selector" id="song-selector">
-      <option value="tabs/arctic_monkeys.txt">Do I wanna know?</option>
-      <option value="tabs/fur_elise.txt">Fur Elise</option>
-      <option value="tabs/a_moll_pentatonic.txt">A Moll pentatonic</option>
-      <option value="tabs/all_notes.txt">All notes</option>
-      <option value="tabs/test.txt">Test</option>\
-      <option value="tabs/zombie.txt">Zombie (akordy)</option>
-    </select> <br>
-    <h3 id="song-name-text"></h3>
-    <h4 id="artist-text">Klikněte na tlačítko Načíst.</h4>
-    <div id="player-controls">
-      <div id="tempo-control">
-        <label for="tempo" id="tempo-text"></label> <br>
-        <input type="range" min="40" max="240" id="tempo-slider">
-      </div>
-      <div id="player-btns-container">
-        <button id="load-btn" class="player-btns">Načíst</button>
-        <button id="play-btn" class="player-btns">Přehrát</button>
-        <button id="stop-btn" class="player-btns">Zastavit</button>
-      </div>
-    </div>
-    <h3 id="error-text"></h3>
+  <div id="header">
+
   </div>
-  <img id="tabsheet-img" src="img/tabsheets/fur_elise.jpg" alt="tabsheet">
+  <div id="main-content">
+    <div id="player-head">
+      <label for="song-selector">Vyberte skladbu:</label>
+      <select name="song-selector" id="song-selector">
+        <option value="tabs/arctic_monkeys.txt">Do I wanna know?</option>
+        <option value="tabs/fur_elise.txt">Fur Elise</option>
+        <option value="tabs/a_moll_pentatonic.txt">A Moll pentatonic</option>
+        <option value="tabs/all_notes.txt">All notes</option>
+        <option value="tabs/test.txt">Test</option>\
+        <option value="tabs/zombie.txt">Zombie (akordy)</option>
+      </select> <br>
+      <h3 id="song-name-text"></h3>
+      <h4 id="artist-text">Klikněte na tlačítko Načíst.</h4>
+      <div id="player-controls">
+        <div id="tempo-control">
+          <label for="tempo" id="tempo-text"></label> <br>
+          <input type="range" min="40" max="240" id="tempo-slider">
+        </div>
+        <div id="player-btns-container">
+          <button id="load-btn" class="player-btns">Načíst</button>
+          <button id="play-btn" class="player-btns">►</button>
+          <button id="stop-btn" class="player-btns">■</button>
+        </div>
+      </div>
+      <h3 id="error-text"></h3>
+    </div>
+    <img id="tabsheet-img" src="img/tabsheets/fur_elise.jpg" alt="tabsheet">
+  </div>
+  <div id="footer">
+    
+  </div>
   <script src="player.js"></script>
 
   <!-- experimental

@@ -11,7 +11,9 @@ body {
     align-items: center;
     flex-direction: row;
     justify-content: space-around;
-    margin: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
 }
 
 .player-btns {
@@ -25,8 +27,25 @@ body {
 .player-btns:hover {
     background-color: #F71919;
 }
+.player-btns:active {
+    background-color: #cc1010;
+}
 .player-btns:disabled {
     background-color: #FA93A7;
+}
+#play-btn {
+    font-size: 20px;
+    padding: 9px 11px 13px 14.21px;
+    border-radius: 22.5px;
+}
+#stop-btn {
+    font-size: 30px;
+    padding: 0px 13.89px 11px 13px;
+    border-radius: 22.5px;
+}
+#tempo-text {
+    font-weight: bold;
+    font-size: 14px;
 }
 #tempo-slider {
     accent-color: #FF3434;
@@ -39,7 +58,7 @@ body {
     color: #FF3434;
     font-size: 40px;
     font-weight: normal;
-    margin-top: 10px;
+    margin-top: 30px;
     padding-bottom: 0px;
     margin-bottom: 0px;
 }
