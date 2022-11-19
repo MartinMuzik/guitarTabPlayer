@@ -7,15 +7,14 @@ body {
 }
 #player-controls {
     display: flex;
-    width: 50%;
     align-items: center;
     flex-direction: row;
-    justify-content: space-around;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 0;
+    justify-content: start;
+    margin: 20px auto 0px 0px;
 }
-
+#player-btns-container {
+    display: flex;
+}
 .player-btns {
     background-color: #FF3434;
     color: #FFFFFF;
@@ -37,22 +36,16 @@ body {
     font-size: 20px;
     padding: 9px 11px 13px 14.21px;
     border-radius: 22.5px;
-}
-#stop-btn {
-    font-size: 30px;
-    padding: 0px 13.89px 11px 13px;
-    border-radius: 22.5px;
+    margin-right: 20px;
+    margin-left: 10px
 }
 #tempo-text {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
 }
 #tempo-slider {
     accent-color: #FF3434;
-    width: 250px;
-}
-#tempo-slider:disabled {
-    background-color: #FA93A7;
+    width: 240px;
 }
 #song-name-text {
     color: #FF3434;
@@ -71,12 +64,22 @@ body {
     font-size: 32px;
 }
 
-@media screen and (max-width: 600px) {
+/*
+@media screen and (max-width: 480px) {
     #song-name-text {
       font-size: 25px;
     }
+    #artist-text {
+        font-size: 20px;
+    }
+    #tempo-text {
+        font-size: 12px;
+    }
+    #tempo-slider {
+        width: 175px;
+    }
   }
-
+*/
 #tabsheet-img {
     width: 100%;
     min-width: 360px;
@@ -85,13 +88,11 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
-@media screen and (min-width: 720px) {
-    #tabsheet-img {
-        width: 85%;
-    }
-}
-@media screen and (min-width: 960px) {
+@media screen and (min-width: 1200px) {
     #tabsheet-img {
         width: 65%;
+    }
+    #player-controls {
+        margin-left: 17.5%;
     }
 }

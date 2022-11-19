@@ -1,7 +1,6 @@
 const URL = window.location.href;
 const LOAD_BUTTON_ELEMENT = document.getElementById("load-btn");
 const PLAY_BUTTON_ELEMENT = document.getElementById("play-btn");
-const STOP_BUTTON_ELEMENT = document.getElementById("stop-btn");
 const SONG_NAME_TEXT_ELEMENT = document.getElementById("song-name-text");
 const ARTIST_TEXT_ELEMENT = document.getElementById("artist-text");
 const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
@@ -41,26 +40,24 @@ let isParsed = false;
 let stopRequest = false;
 let isPlaying = false;
 
+//Page loading starts here
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
-STOP_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 getCookie();
 
 
 LOAD_BUTTON_ELEMENT.addEventListener("click", function() {
   audioContext = new AudioContext;
-  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
-  PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
-  LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+  LOAD_BUTTON_ELEMENT.remove();
   loadSong();
 });
 
 PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
-  playSong();
-});
-  
-STOP_BUTTON_ELEMENT.addEventListener("click", function() {
   if (isPlaying) {
     stopRequest = true;
+    PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+  } else {
+    playSong();
   }
 });
   
@@ -80,35 +77,33 @@ SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
 // Load song - call this method first to start
 function loadSong() {
   tabSource = SONG_SELECTOR_ELEMENT.value;
-  
+
   try {
     parseTabs(tabSource);
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
-    LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
-    PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
-    STOP_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
-    TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
-    SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
   }
 
   // only debug (time measure)
   console.log("Song duration (original): " + songDuration*1000 + "ms");
 
-  TEMPO_SLIDER_ELEMENT.value = currentTempo;
-  ARTIST_TEXT_ELEMENT.innerHTML = artist;
-  SONG_NAME_TEXT_ELEMENT.innerHTML = songName;
-  // load all required audio sources
-  getAllUsedNotes();
-  setupAudioFiles(usedNotes).then((response) => {
-    audioBuffers = response;
-    SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
-    PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
-    STOP_BUTTON_ELEMENT.removeAttribute("disabled");
-  });
+  if(isParsed) {
+    ERROR_TEXT_ELEMENT.innerText = "Načítá se";
+    TEMPO_SLIDER_ELEMENT.value = currentTempo;
+    ARTIST_TEXT_ELEMENT.innerText = artist;
+    SONG_NAME_TEXT_ELEMENT.innerText = songName;
+    // load all required audio sources
+    getAllUsedNotes();
+    setupAudioFiles(usedNotes).then((response) => {
+      audioBuffers = response;
+      PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+      TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
+      ERROR_TEXT_ELEMENT.innerText = "";
+    });
   }
+}
 
-// Parameter file: url of text file containing tabs
+// Parameter file: url of the text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
   parsedTab = [] // clear from previous tab
@@ -246,7 +241,7 @@ function parseHarmony(stringQuantity, tabs, i) {
 
 // set currentTempo
 function setTempo() {
-  TEMPO_TEXT_ELEMENT.innerHTML = `Tempo: ${currentTempo} BPM (original: ${originalTempo} BPM)`;
+  TEMPO_TEXT_ELEMENT.innerText = `${currentTempo} BPM (original: ${originalTempo} BPM)`;
 }
 
 // Create an array including all used notes
@@ -276,16 +271,17 @@ function getAllUsedNotes() {
 // Play audio sources asynchronously according to parsedTab array
 // Each note (audio source) plays for specific time according to note length
 async function playSong () {
-  /* for variation using Date
+  /* for version using Date
   // store Date (time) when the next note should start
   let executeDate = 0;
   */
   isPlaying = true;
   stopRequest = false;
-  PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
+  PLAY_BUTTON_ELEMENT.innerText = "■";
+  PLAY_BUTTON_ELEMENT.style.padding = "0px 13.89px 11px 13px";
+  PLAY_BUTTON_ELEMENT.style.fontSize = "30px";
   TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
   SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
-  LOAD_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
  
   if (isParsed) {
     // Change note duration according to the new tempo
@@ -308,7 +304,7 @@ async function playSong () {
     for (let measure = 0; measure < parsedTab.length; measure++) {
       for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {
-          /* for variation using Date
+          /* for version using Date
           if (executeDate !== 0) {
             // wait till the audio stops playing (using Date for better accurate)
             await timer(executeDate - Date.now());
@@ -361,13 +357,13 @@ async function playSong () {
           // wait till the audio stops playing
           await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
 
-          // for variation using Date
+          // for version using Date
           // executeDate = Date.now() + parsedTab[measure][harmony][0]*1000;
         }
       }
     }
 
-    // for variation using Date
+    // for version using Date
     // wait till the last audio stops playing
     // await timer(parsedTab[parsedTab.length - 1][parsedTab[parsedTab.length - 1].length - 1][0]*1000);
 
@@ -386,8 +382,13 @@ async function playSong () {
   }
 
   isPlaying = false;
-  stopRequest = false;
-  PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+  if (stopRequest) {
+    stopRequest = false;
+    PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
+  }
+  PLAY_BUTTON_ELEMENT.innerText = "►";
+  PLAY_BUTTON_ELEMENT.style.padding = "9px 11px 13px 14.21px";
+  PLAY_BUTTON_ELEMENT.style.fontSize = "20px";
   TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
   SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 }
