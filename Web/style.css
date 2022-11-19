@@ -39,6 +39,9 @@ body {
     margin-right: 20px;
     margin-left: 10px
 }
+#load-btn {
+    margin-left: 10px;
+}
 #tempo-text {
     font-weight: bold;
     font-size: 16px;
