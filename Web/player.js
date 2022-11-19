@@ -39,6 +39,10 @@ let isFileCorrect = true;
 let isParsed = false;
 let stopRequest = false;
 let isPlaying = false;
+// used when calculating new note lengths after changing the tempo
+// condition: originalTempo != currentTempo won't work correctly when changing
+// different tempo back to the value of originalTempo; 
+let isTempoChanged = false;
 
 //Page loading starts here
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
@@ -64,6 +68,7 @@ PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
 TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
   currentTempo = TEMPO_SLIDER_ELEMENT.value;
   setTempo();
+  isTempoChanged = true;
 });
 
 
@@ -285,7 +290,7 @@ async function playSong () {
  
   if (isParsed) {
     // Change note duration according to the new tempo
-    if (originalTempo != currentTempo) {
+    if (isTempoChanged) {
       let currentNoteLength;
       let newNoteDuration;
 
