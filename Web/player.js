@@ -16,7 +16,7 @@ const timer = ms => new Promise(res => setTimeout(res, ms));
 // before playing next note 
 const DEVIATION = 3.4;
 
-let tabSource = SONG_SELECTOR_ELEMENT.value;
+let tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
 let artist;
 let songName;
 let originalTempo;
@@ -81,7 +81,7 @@ SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
 
 // Load song - call this method first to start
 function loadSong() {
-  tabSource = SONG_SELECTOR_ELEMENT.value;
+  tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
 
   try {
     parseTabs(tabSource);
@@ -315,7 +315,7 @@ async function playSong () {
             await timer(executeDate - Date.now());
           }
           */
-         
+        
           // debug only (print current notes), remove this block later
           switch (parsedTab[measure][harmony].length - 2) {
             case 1: // 1 string played at once
@@ -434,7 +434,7 @@ function playAudio(audioBuffer, time) {
 function getCookie() {
   if (document.cookie != "") {
     SONG_SELECTOR_ELEMENT.value = document.cookie.substring(17);
-    tabSource = SONG_SELECTOR_ELEMENT.value;
+    tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
   }
 }
 
