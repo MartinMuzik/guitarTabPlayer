@@ -44,12 +44,13 @@ let isPlaying = false;
 // different tempo back to the value of originalTempo; 
 let isTempoChanged = false;
 
+
 //Page loading starts here
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 getCookie();
 
-
+// AudioContext would not work without some interaction with a user
 LOAD_BUTTON_ELEMENT.addEventListener("click", function() {
   audioContext = new AudioContext;
   LOAD_BUTTON_ELEMENT.remove();
@@ -186,6 +187,42 @@ function parseTabs(file) {
   }
 }
 
+// Parse 1 note or harmony of more notes played at once
+function parseHarmony(stringQuantity, tabs, i) {
+  let currentHarmony = [];
+  let currentNoteLength;
+  let currentNoteDuration;
+
+  if (NOTE_LENGTH_REG_EXP.test(tabs[i].substring(0, 3))) {
+    // Set note length in seconds
+    // 60/currentTempo = duration of 1 quarter note in seconds
+    // (60/currentTempo)/(currentNoteLength/4) = duration of current note in seconds
+    currentNoteLength = parseInt(tabs[i].substring(1, 3));
+    currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+    currentHarmony.push(currentNoteDuration);
+    
+    // for debug
+    songDuration += currentNoteDuration;
+
+    // Check fret numbers
+    for (let j = 0; j < stringQuantity; j++) {
+      let substringIndex = (4 + 5 * (j));
+      let currentNote = tabs[i].substring(substringIndex, substringIndex + 4);
+      if (NOTE_REG_EXP.test(currentNote)) {
+        currentHarmony.push(currentNote);
+      }
+    }
+    // Push current note length (for tempo change feature)
+    currentHarmony.push(parseInt(tabs[i].substring(1, 3)));
+    if (currentHarmony.length == stringQuantity + 2) {
+      return currentHarmony;
+    } 
+  }
+
+  isFileCorrect = false;
+  return null;
+}
+
 // Read text file cointaing tabs with XHR
 function readTabsFile(file) {
   let fileContent;
@@ -207,41 +244,6 @@ function readTabsFile(file) {
 
   isFileCorrect = false;
   throw "Soubor s taby nebyl nalezen.";
-}
-
-// Parse 1 note or harmony of more notes played at once
-function parseHarmony(stringQuantity, tabs, i) {
-  let currentHarmony = [];
-  let currentNoteLength;
-  let currentNoteDuration;
-
-  if (NOTE_LENGTH_REG_EXP.test(tabs[i].substring(0, 3))) {
-    // Set note length in seconds
-    // 60/currentTempo = duration of 1 quarter note in seconds
-    // (60/currentTempo)/(currentNoteLength/4) = duration of current note in seconds
-    currentNoteLength = parseInt(tabs[i].substring(1, 3));
-    currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
-    currentHarmony.push(currentNoteDuration);
-    // for debug
-    songDuration += currentNoteDuration;
-
-    // Check fret numbers
-    for (let j = 0; j < stringQuantity; j++) {
-      let substringIndex = (4 + 5 * (j));
-      let currentNote = tabs[i].substring(substringIndex, substringIndex + 4);
-      if (NOTE_REG_EXP.test(currentNote)) {
-        currentHarmony.push(currentNote);
-      }
-    }
-    // Push current note length (for tempo change feature)
-    currentHarmony.push(parseInt(tabs[i].substring(1, 3)));
-    if (currentHarmony.length == stringQuantity + 2) {
-      return currentHarmony;
-    } 
-  }
-
-  isFileCorrect = false;
-  return null;
 }
 
 // set currentTempo
@@ -430,7 +432,7 @@ function playAudio(audioBuffer, time) {
 }
 
 // Load cookie "currentTabSource" and set tabSource
-// Used to switch between songs and don't fill cache with audio sources
+// Use to switch between songs and don't fill cache with audio sources
 function getCookie() {
   if (document.cookie != "") {
     SONG_SELECTOR_ELEMENT.value = document.cookie.substring(17);
