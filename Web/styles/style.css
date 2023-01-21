@@ -223,6 +223,11 @@ body {
 #remove-previous-btn {
     margin-left: 10px;
 }
+.prevent-select {
+    user-select: none; 
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+}
 
 @media screen and (min-width: 1200px) {
     #admin-menu-items {

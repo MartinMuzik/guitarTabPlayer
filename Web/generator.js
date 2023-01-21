@@ -69,3 +69,6 @@ function selectNote(note) {
   }
 }
 
+function addHarmony() {
+    
+}
