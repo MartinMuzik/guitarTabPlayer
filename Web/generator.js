@@ -36,52 +36,12 @@ SAVE_METADATA_BUTTON.addEventListener("click", function() {
   OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
 });
 
-// play current harmony
 PLAY_HARMONY_BUTTON.addEventListener("click", function() {
-  if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
-    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4))
-    let audios = [];
-
-    if (STRING_ONE_SELECTOR.value != "X") {
-        audios.push(new Audio(`/sounds/1_${STRING_ONE_SELECTOR.value}.wav`));
-    }
-    if (STRING_TWO_SELECTOR.value != "X") {
-      audios.push(new Audio(`/sounds/2_${STRING_TWO_SELECTOR.value}.wav`));
-    }
-    if (STRING_THREE_SELECTOR.value != "X") {
-      audios.push(new Audio(`/sounds/3_${STRING_THREE_SELECTOR.value}.wav`));
-    }
-    if (STRING_FOUR_SELECTOR.value != "X") {
-      audios.push(new Audio(`/sounds/4_${STRING_FOUR_SELECTOR.value}.wav`));
-    }
-    if (STRING_FIVE_SELECTOR.value != "X") {
-      audios.push(new Audio(`/sounds/5_${STRING_FIVE_SELECTOR.value}.wav`));
-    }
-    if (STRING_SIX_SELECTOR.value != "X") {
-      audios.push(new Audio(`/sounds/6_${STRING_SIX_SELECTOR.value}.wav`));
-    }
-
-    audios.forEach(audio => {
-      audio.play();
-    });
-    setTimeout(function(){
-      audios.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    }, length*1000);
-  } else {
-    console.log("Tempo out of range.");
-  }
+  playHarmony();
 });
 
 RESET_HARMONY_BUTTON.addEventListener("click", function() {
-  STRING_ONE_SELECTOR.value = "X";
-  STRING_TWO_SELECTOR.value = "X";
-  STRING_THREE_SELECTOR.value = "X";
-  STRING_FOUR_SELECTOR.value = "X";
-  STRING_FIVE_SELECTOR.value = "X";
-  STRING_SIX_SELECTOR.value = "X";
+  resetHarmony();
 });
 
 // play note and update string selector
@@ -120,5 +80,53 @@ function selectNote(note) {
 }
 
 function playHarmony() {
-    
+  if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
+    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4))
+    let audios = getAudioFiles();
+    audios.forEach(audio => {
+        audio.play();
+    });
+    setTimeout(function(){
+        audios.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+        });
+    }, length*1000);
+  } else {
+    console.log("Tempo out of range.");
+  }
+}
+
+function getAudioFiles() {
+  let audios = [];
+
+  if (STRING_ONE_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/1_${STRING_ONE_SELECTOR.value}.wav`));
+  }
+  if (STRING_TWO_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/2_${STRING_TWO_SELECTOR.value}.wav`));
+  }
+  if (STRING_THREE_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/3_${STRING_THREE_SELECTOR.value}.wav`));
+  }
+  if (STRING_FOUR_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/4_${STRING_FOUR_SELECTOR.value}.wav`));
+  }
+  if (STRING_FIVE_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/5_${STRING_FIVE_SELECTOR.value}.wav`));
+  }
+  if (STRING_SIX_SELECTOR.value != "X") {
+    audios.push(new Audio(`/sounds/6_${STRING_SIX_SELECTOR.value}.wav`));
+  }
+
+  return audios;
+}
+
+function resetHarmony() {
+  STRING_ONE_SELECTOR.value = "X";
+  STRING_TWO_SELECTOR.value = "X";
+  STRING_THREE_SELECTOR.value = "X";
+  STRING_FOUR_SELECTOR.value = "X";
+  STRING_FIVE_SELECTOR.value = "X";
+  STRING_SIX_SELECTOR.value = "X";
 }
