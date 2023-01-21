@@ -1,0 +1,252 @@
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    color: #2e2e2e;
+}
+#player-head {
+    text-align: center;
+}
+#player-controls {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: start;
+    margin: 20px auto 0px 0px;
+}
+#player-btns-container {
+    display: flex;
+}
+.player-btns {
+    background-color: #FF3434;
+    color: #FFFFFF;
+    border: 0;
+    font-weight: bold;
+    padding: 15px 15px;
+    border-radius: 30px;
+}
+.player-btns:hover {
+    background-color: #F71919;
+}
+.player-btns:active {
+    background-color: #cc1010;
+}
+.player-btns:disabled {
+    background-color: #FA93A7;
+}
+#play-btn {
+    font-size: 20px;
+    padding: 9px 11px 13px 14.21px;
+    border-radius: 22.5px;
+    margin-right: 20px;
+    margin-left: 10px
+}
+#load-btn {
+    margin-left: 10px;
+}
+#tempo-text {
+    font-weight: bold;
+    font-size: 16px;
+}
+#tempo-slider {
+    accent-color: #FF3434;
+    width: 240px;
+}
+#song-name-text {
+    color: #FF3434;
+    font-size: 40px;
+    font-weight: normal;
+    margin-top: 30px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+#artist-text {
+    margin-top: 0px;
+    margin-bottom: 15px;
+    padding-top: 0px;
+    font-weight: normal;
+    font-style: italic;
+    font-size: 32px;
+}
+#tabsheet-img {
+    width: 100%;
+    min-width: 360px;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+#footer {
+    background-color: #2e2e2e;
+}
+#footer-text {
+    color: #FFFFFF;
+    padding: 15px 0px;
+    margin-left: 15px;
+}
+#home-page-footer {
+    display: flex;
+    flex-direction: row;
+}
+#admin-login-link {
+    color: #FFFFFF;
+    padding: 15px 15px 15px 40px;
+    margin: 0px;
+    text-decoration: none;
+    font-style: italic;
+}
+#song-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0px auto;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 10px;
+    font-size: 18px;
+}
+#song-selector {
+    width: 98.5%;
+    margin-top: 10px;
+    font-size: 18px;
+    border-radius: 18px;
+    border-color: #FF3434;
+    border-width: 2px;
+    padding: 5px 5px;
+    color: #2e2e2e;
+    font-weight: bold;
+}
+/*
+@media screen and (max-width: 480px) {
+    #song-name-text {
+      font-size: 25px;
+    }
+    #artist-text {
+        font-size: 20px;
+    }
+    #tempo-text {
+        font-size: 12px;
+    }
+    #tempo-slider {
+        width: 175px;
+    }
+  }
+*/
+
+@media screen and (min-width: 1200px) {
+    #tabsheet-img {
+        width: 65%;
+    }
+    #player-controls {
+        margin-left: 17.5%;
+    }
+    #footer-text {
+        margin-left: 17.5%;
+    }
+    #song-list {
+        width: 64%;
+    }
+}
+
+
+/*
+  ADMIN STYLES START HERE
+*/
+
+.admin-menu {
+    list-style-type: none;
+    margin: 0 0 40px 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #FF3434;
+}
+.admin-menu-li {
+    float: left;
+    display: inline;
+}
+.admin-menu-a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-weight: 600;
+}
+.admin-menu-a:hover {
+    background-color: #F71919;
+}
+.admin-menu-active {
+    background-color: #F71919;
+}
+#admin-logout-btn {
+    float: right;
+    font-style: italic;
+}
+#fretboard-img {
+    width: 1200px;
+    display: block;
+    margin: auto;
+    padding-left: 10px;
+}
+#admin-h2 {
+    margin-left: 15px;
+}
+.metadata-input {
+    resize: none;
+}
+
+#output-textarea {
+    resize: vertical;
+    margin-left: 15px;
+    height: 400px;
+    width: 300px;
+}
+
+#generator-controls {
+    display: flex;
+    flex-direction: row;
+    margin-left: 15px;
+}
+#harmony-controls {
+    margin-left: 50px;
+}
+.generator-controls-text {
+    margin: 0 0 8px 0;
+    font-weight: bolder;
+}
+.generator-btn {
+    margin-top: 8px;
+}
+#output-text {
+    font-weight: bolder;
+    margin-left: 15px;
+    margin-bottom: 8px;
+}
+#remove-previous-btn {
+    margin-left: 10px;
+}
+
+@media screen and (min-width: 1200px) {
+    #admin-menu-items {
+        margin-left: 17.5%;
+    }
+    #admin-h2 {
+        margin-left: 17.5%;
+        padding-left: 0;
+    }
+    #generator-controls {
+        margin-left: 17.5%;
+    }
+    #output-textarea {
+        margin-left: 17.5%;
+    }
+    #output-text {
+        margin-left: 17.5%;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    #output-textarea {
+        resize: vertical;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+}
