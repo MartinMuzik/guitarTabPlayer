@@ -5,6 +5,7 @@ const OUTPUT_TEXTAREA = document.getElementById("output-textarea");
 const SAVE_METADATA_BUTTON = document.getElementById("save-metadata-btn");
 const PLAY_HARMONY_BUTTON = document.getElementById("play-harmony-btn");
 const RESET_HARMONY_BUTTON = document.getElementById("reset-harmony-btn");
+const APPEND_HARMONY_BUTTON = document.getElementById("append-harmony-btn");
 const STRING_ONE_SELECTOR = document.getElementById("string-one-selector");
 const STRING_TWO_SELECTOR = document.getElementById("string-two-selector");
 const STRING_THREE_SELECTOR = document.getElementById("string-three-selector");
@@ -13,27 +14,10 @@ const STRING_FIVE_SELECTOR = document.getElementById("string-five-selector");
 const STRING_SIX_SELECTOR = document.getElementById("string-six-selector");
 const NOTE_LENGTH_SELECTOR = document.getElementById("note-length-selector");
 
-let output = "Blabla0\nBlabla1\nBlabla2\nBlabla3\nBlabla4\nBlabla5\n";
+let output = "";
 
-// replace first three rows in output data and textarea
 SAVE_METADATA_BUTTON.addEventListener("click", function() {
-  let lines = output.split("\n");
-  lines[0] = ARTIST_INPUT.value;
-  lines[1] = SONG_NAME_INPUT.value;
-
-  if (TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
-    lines[2] = TEMPO_INPUT.value;
-  } else {
-    lines[2] = "Tempo out of range.";
-  }
-
-  output = "";
-
-  for(let i = 0; i < lines.length; i++) {
-    output += lines[i] + "\n";
-  }
-
-  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
+  saveMetadata();
 });
 
 PLAY_HARMONY_BUTTON.addEventListener("click", function() {
@@ -43,6 +27,41 @@ PLAY_HARMONY_BUTTON.addEventListener("click", function() {
 RESET_HARMONY_BUTTON.addEventListener("click", function() {
   resetHarmony();
 });
+
+APPEND_HARMONY_BUTTON.addEventListener("click", function() {
+  appendHarmony();
+});
+
+// replace first three rows in output data and textarea
+function saveMetadata() {
+  let lines = output.split("\n");
+
+  if (ARTIST_INPUT.value != "") {
+    lines[0] = ARTIST_INPUT.value;
+  } else {
+    lines[0] = "Umělec neuveden";
+  }
+
+  if (SONG_NAME_INPUT.value != "") {
+    lines[1] = SONG_NAME_INPUT.value;
+  } else {
+    lines[1] = "Název skladby neuveden";
+  }
+
+  if (TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
+    lines[2] = TEMPO_INPUT.value;
+  } else {
+    lines[2] = "Tempo mimo rozsah";
+  }
+
+  output = "";
+
+  for(let i = 0; i < lines.length; i++) {
+    output += lines[i] + "\n";
+  }
+
+  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
+}
 
 // play note and update string selector
 function selectNote(note) {
@@ -98,28 +117,37 @@ function playHarmony() {
 }
 
 function getAudioFiles() {
+  let notes = getStringInfo();
   let audios = [];
 
-  if (STRING_ONE_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/1_${STRING_ONE_SELECTOR.value}.wav`));
-  }
-  if (STRING_TWO_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/2_${STRING_TWO_SELECTOR.value}.wav`));
-  }
-  if (STRING_THREE_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/3_${STRING_THREE_SELECTOR.value}.wav`));
-  }
-  if (STRING_FOUR_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/4_${STRING_FOUR_SELECTOR.value}.wav`));
-  }
-  if (STRING_FIVE_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/5_${STRING_FIVE_SELECTOR.value}.wav`));
-  }
-  if (STRING_SIX_SELECTOR.value != "X") {
-    audios.push(new Audio(`/sounds/6_${STRING_SIX_SELECTOR.value}.wav`));
-  }
+  notes.forEach(note => {
+    audios.push(new Audio(`/sounds/${note}.wav`));
+  });
 
   return audios;
+}
+
+function getStringInfo() {
+  let notes = [];
+  if (STRING_ONE_SELECTOR.value != "X") {
+    notes.push("1_" + STRING_ONE_SELECTOR.value);
+  }
+  if (STRING_TWO_SELECTOR.value != "X") {
+    notes.push("2_" + STRING_TWO_SELECTOR.value);
+  }
+  if (STRING_THREE_SELECTOR.value != "X") {
+    notes.push("3_" + STRING_THREE_SELECTOR.value);
+  }
+  if (STRING_FOUR_SELECTOR.value != "X") {
+    notes.push("4_" + STRING_FOUR_SELECTOR.value);
+  }
+  if (STRING_FIVE_SELECTOR.value != "X") {
+    notes.push("5_" + STRING_FIVE_SELECTOR.value);
+  }
+  if (STRING_SIX_SELECTOR.value != "X") {
+    notes.push("6_" + STRING_SIX_SELECTOR.value);
+  }
+  return notes;
 }
 
 function resetHarmony() {
@@ -129,4 +157,20 @@ function resetHarmony() {
   STRING_FOUR_SELECTOR.value = "X";
   STRING_FIVE_SELECTOR.value = "X";
   STRING_SIX_SELECTOR.value = "X";
+}
+
+function appendHarmony() {
+  let noteList = getStringInfo();
+  let notes = ":" + NOTE_LENGTH_SELECTOR.value;
+
+  if(noteList.length == 0) {
+    notes += " XXXX";
+  } else {
+    noteList.forEach(note => {
+      notes += " " + note;
+    });
+  }
+  
+  output += notes + "\n";
+  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
 }

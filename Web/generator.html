@@ -30,7 +30,7 @@
         <label for="song-name">Název skladby:</label><br>
         <input type="text" id="song-name-input" name="song-name" class="metadata-input"><br>
         <label for="tempo">Tempo (BPM):</label><br>
-        <input type="number" id="tempo-input" name="tempo" min="40" max="240" step="1" class="metadata-input"><br>
+        <input type="number" id="tempo-input" name="tempo" value="80" min="40" max="240" step="1" class="metadata-input"><br>
         <button id="save-metadata-btn" class="generator-btn">Uložit</button>
       </div>
       <div id="harmony-controls">
@@ -194,7 +194,7 @@
           <option value="16">Šesnáctinová</option>
           <option value="32">Dvaatřicetinová</option>
         </select> <br>
-        <button id="add-harmony-btn" class="generator-btn">Přidat</button>
+        <button id="append-harmony-btn" class="generator-btn">Přidat</button>
         <button id="play-harmony-btn" class="generator-btn">Přehrát</button>
         <button id="reset-harmony-btn" class="generator-btn">Reset</button>
         <button id="remove-previous-btn" class="generator-btn">Smazat předchozí</button>
