@@ -6,6 +6,7 @@ const SAVE_METADATA_BUTTON = document.getElementById("save-metadata-btn");
 const PLAY_HARMONY_BUTTON = document.getElementById("play-harmony-btn");
 const RESET_HARMONY_BUTTON = document.getElementById("reset-harmony-btn");
 const APPEND_HARMONY_BUTTON = document.getElementById("append-harmony-btn");
+const REMOVE_LAST_BUTTON = document.getElementById("remove-last-btn");
 const STRING_ONE_SELECTOR = document.getElementById("string-one-selector");
 const STRING_TWO_SELECTOR = document.getElementById("string-two-selector");
 const STRING_THREE_SELECTOR = document.getElementById("string-three-selector");
@@ -15,6 +16,7 @@ const STRING_SIX_SELECTOR = document.getElementById("string-six-selector");
 const NOTE_LENGTH_SELECTOR = document.getElementById("note-length-selector");
 
 let output = "";
+let metadataExist = false;
 
 SAVE_METADATA_BUTTON.addEventListener("click", function() {
   saveMetadata();
@@ -30,6 +32,9 @@ RESET_HARMONY_BUTTON.addEventListener("click", function() {
 
 APPEND_HARMONY_BUTTON.addEventListener("click", function() {
   appendHarmony();
+});
+REMOVE_LAST_BUTTON.addEventListener("click", function() {
+  removeLastHarmony();
 });
 
 // replace first three rows in output data and textarea
@@ -60,20 +65,24 @@ function saveMetadata() {
     output += lines[i] + "\n";
   }
 
-  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
+  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+  metadataExist = true;
 }
 
 // play note and update string selector
 function selectNote(note) {
-  //debug only
-  console.log(note);
+  if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
+    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    let audio = new Audio(`/sounds/${note}.wav`);
+    audio.play();
 
-  let audio = new Audio(`/sounds/${note}.wav`);
-  audio.play();
-  setTimeout(function(){
-    audio.pause();
-    audio.currentTime = 0;
-  }, 2000);
+    setTimeout(function(){
+      audio.pause();
+      audio.currentTime = 0;
+    }, length*1000);
+  } else {
+    console.log("Tempo out of range.");
+  }
 
   switch (note.substring(0, 1)) {
     case "1":
@@ -100,7 +109,7 @@ function selectNote(note) {
 
 function playHarmony() {
   if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
-    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4))
+    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
     let audios = getAudioFiles();
     audios.forEach(audio => {
         audio.play();
@@ -163,6 +172,10 @@ function appendHarmony() {
   let noteList = getStringInfo();
   let notes = ":" + NOTE_LENGTH_SELECTOR.value;
 
+  if (!metadataExist) {
+    saveMetadata();
+  }
+
   if(noteList.length == 0) {
     notes += " XXXX";
   } else {
@@ -172,5 +185,19 @@ function appendHarmony() {
   }
   
   output += notes + "\n";
-  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "&#10");
+  OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+}
+
+function removeLastHarmony() {
+  let lines = output.split("\n");
+
+  if (lines.length > 4) {
+    output = "";
+
+    for(let i = 0; i < (lines.length - 2); i++) {
+      output += lines[i] + "\n";
+    }
+
+    OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+  }
 }

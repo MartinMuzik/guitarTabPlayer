@@ -197,7 +197,7 @@
         <button id="append-harmony-btn" class="generator-btn">Přidat</button>
         <button id="play-harmony-btn" class="generator-btn">Přehrát</button>
         <button id="reset-harmony-btn" class="generator-btn">Reset</button>
-        <button id="remove-previous-btn" class="generator-btn">Smazat předchozí</button>
+        <button id="remove-last-btn" class="generator-btn">Smazat předchozí</button>
       </div>
     </div>
   </div>
@@ -330,8 +330,13 @@
       <area onclick="selectNote('1_19')" coords="1124,21,1159,21,1159,2,1125,2" shape="poly">
       <area onclick="selectNote('1_20')" coords="1159,21,1190,19,1191,1,1159,2" shape="poly">
     </map>
-    <p id="output-text">Výstup:</p>
-    <textarea readonly id="output-textarea"></textarea>
+    <div id="output-div">
+      <button id="download-btn" class="generator-btn">Stáhnout</button>
+      <button id="play-song-btn" class="generator-btn">Přehrát celé</button>
+      <button id="add-to-library-btn" class="generator-btn">Přidat do knihovny</button>
+      <p id="output-text">Náhled:</p>
+      <textarea readonly id="output-textarea" oncopy="return false"></textarea>
+    </div>
   </div>
   <div id="footer">
     <p id="footer-text">Martin Mužík 2022/2023</p>
