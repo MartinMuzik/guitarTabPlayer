@@ -82,14 +82,23 @@ body {
     color: #FFFFFF;
     padding: 15px 0px;
     margin-left: 15px;
+    margin-bottom: 0;
 }
-#home-page-footer {
+#player-footer-text {
+    color: #FFFFFF;
+    padding: 0px;
+    margin: 0px;
+}
+#player-footer {
+    color: #FFFFFF;
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    padding: 15px 0;
+    margin: 0 15px;
 }
 #admin-login-link {
     color: #FFFFFF;
-    padding: 15px 15px 15px 40px;
     margin: 0px;
     text-decoration: none;
     font-style: italic;
@@ -144,6 +153,9 @@ body {
     #song-list {
         width: 64%;
     }
+    #player-footer {
+        margin: 0 18.25%;
+    }
 }
 
 
@@ -191,13 +203,23 @@ body {
 }
 .metadata-input {
     resize: none;
+    border-radius: 10px;
+    border-color: #FF3434;
+    border-width: 2px;
+    padding: 4px;
+    color: #2e2e2e;
+    font-weight: bold;
 }
 
 #output-textarea {
     resize: vertical;
-    margin-left: 15px;
     height: 400px;
     width: 300px;
+    border-radius: 8px;
+    border-color: #FF3434;
+    border-width: 2px;
+    color: #2e2e2e;
+    font-weight: bold;
 }
 
 #generator-controls {
@@ -214,19 +236,42 @@ body {
 }
 .generator-btn {
     margin-top: 8px;
+    background-color: #FF3434;
+    color: #FFFFFF;
+    border: 0;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 16px;
+}
+.generator-btn:hover {
+    background-color: #F71919;
+}
+.generator-btn:active {
+    background-color: #cc1010;
+}
+.generator-selector {
+    border-radius: 8px;
+    border-color: #FF3434;
+    border-width: 2px;
+    color: #2e2e2e;
+    font-weight: bold;
 }
 #output-text {
     font-weight: bolder;
-    margin-left: 15px;
     margin-bottom: 8px;
-}
-#remove-previous-btn {
-    margin-left: 10px;
 }
 .prevent-select {
     user-select: none; 
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
+}
+#output-div {
+    margin-left: 15px;
+}
+#error-message {
+    margin: 3px 0;
+    font-weight: bolder;
+    font-style: italic;
 }
 
 @media screen and (min-width: 1200px) {
@@ -240,18 +285,7 @@ body {
     #generator-controls {
         margin-left: 17.5%;
     }
-    #output-textarea {
+    #output-div {
         margin-left: 17.5%;
-    }
-    #output-text {
-        margin-left: 17.5%;
-    }
-}
-
-@media screen and (max-width: 1199px) {
-    #output-textarea {
-        resize: vertical;
-        margin-left: 15px;
-        margin-right: 15px;
     }
 }
