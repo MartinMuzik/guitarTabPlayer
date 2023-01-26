@@ -15,4 +15,4 @@ Other features (which may be developed after the main features are done):
  - Metronome
  - Realtime "played notes checker" - checks if the notes are played correctly (input from microphone) like in Rocksmith 
 
-Deadline for main features to be fully developed: 1.2.2023
+Deadline for main features to be fully developed: 14.2.2023
