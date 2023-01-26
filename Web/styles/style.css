@@ -6,12 +6,31 @@ body {
 #player-head {
     text-align: center;
 }
-#player-controls {
+#player-controls-top {
     display: flex;
     align-items: center;
     flex-direction: row;
     justify-content: start;
-    margin: 20px auto 0px 0px;
+    margin: 20px auto 10px 0px;
+}
+#player-start-control {
+    margin-left: 15px;
+    text-align: left;
+    font-weight: bolder;
+}
+#start-input {
+    margin-left: 10px;
+    border-radius: 10px;
+    border-color: #FF3434;
+    border-width: 2px;
+    padding: 4px;
+    color: #2e2e2e;
+    font-weight: bold;
+    font-size: 14px;
+    width: 40px;
+}
+#start-input:disabled {
+    border-color: #FA93A7;
 }
 #player-btns-container {
     display: flex;
@@ -144,8 +163,11 @@ body {
     #tabsheet-img {
         width: 65%;
     }
-    #player-controls {
+    #player-controls-top {
         margin-left: 17.5%;
+    }
+    #player-start-control {
+        margin-left: 18.25%;
     }
     #footer-text {
         margin-left: 17.5%;
