@@ -70,10 +70,22 @@ function saveMetadata() {
     lines[2] = TEMPO_INPUT.value;
 
     output = "";
-
-    for(let i = 0; i < lines.length; i++) {
-      output += lines[i] + "\n";
+    
+    // Append data back to output, if metadataExist last line doesn't include \n
+    if (!metadataExist) {
+      for(let i = 0; i < lines.length; i++) {
+        output += lines[i] + "\n";
+      }
+    } else {
+      for(let i = 0; i < lines.length; i++) {
+        if (i < lines.length - 1) {
+          output += lines[i] + "\n";
+        } else {
+          output += lines[i];
+        }
+      }
     }
+
 
     OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
     metadataExist = true;
@@ -273,10 +285,8 @@ function prepareForExport() {
 
   if (lines[lines.length - 2] != "|") {
     realOutput = output + "|";
-    console.log("bez carky " + lines[lines.length - 2]);
   }
   else {
-    console.log("S carkou");
     for(let i = 0; i < lines.length; i++) {
       if (i < lines.length - 2) {
         realOutput += lines[i] + "\n";
