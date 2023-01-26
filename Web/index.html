@@ -23,7 +23,7 @@
       </div>
       <h3 id="song-name-text"></h3>
       <h4 id="artist-text"></h4>
-      <div id="player-controls">
+      <div id="player-controls-top">
         <div id="player-btns-container">
           <button id="load-btn" class="player-btns">Načíst</button>
           <button id="play-btn" class="player-btns">►</button>
@@ -32,6 +32,10 @@
           <label for="tempo" id="tempo-text">? BPM</label> <br>
           <input type="range" min="40" max="240" value="40" id="tempo-slider">
         </div>
+      </div>
+      <div id="player-start-control">
+        <label for="start-control">Začít od:</label>
+        <input type="number" id="start-input" name="start-control" value="1" min="1" step="1">
       </div>
       <h3 id="error-text">Klikněte na tlačítko Načíst.</h3>
     </div>

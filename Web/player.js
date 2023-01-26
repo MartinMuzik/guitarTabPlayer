@@ -7,6 +7,7 @@ const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
 const TEMPO_SLIDER_ELEMENT = document.getElementById("tempo-slider");
 const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
 const SONG_SELECTOR_ELEMENT = document.getElementById("song-selector");
+const START_INPUT_ELEMENT = document.getElementById("start-input");
 const NOTE_REG_EXP = new RegExp(/^([1-6]_(([01][0-9])|20))|XXXX$/);
 const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
@@ -26,7 +27,8 @@ let songDuration = 0;
 
 // Array containing parsed tab data
 // Format: [measure][note/harmony][note duration, note,..., note length]
-let parsedTab = [];
+let originalParsedTab = [];
+let currentParsedTab = [];
 // Array containing names of all notes used
 // in current song (without repetition) 
 let usedNotes = [];
@@ -48,6 +50,7 @@ let isTempoChanged = false;
 //Page loading starts here
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
+START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
 getCookie();
 
 // AudioContext would not work without some interaction with a user
@@ -62,7 +65,13 @@ PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
     stopRequest = true;
     PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
   } else {
-    playSong();
+    if (START_INPUT_ELEMENT.value <= originalParsedTab.length) {
+      ERROR_TEXT_ELEMENT.textContent = "";
+      checkStartValue();
+      playSong();
+    } else {
+      ERROR_TEXT_ELEMENT.textContent = "Zvolený začáteční takt přesahuje délku skladby.";
+    }
   }
 });
   
@@ -104,6 +113,7 @@ function loadSong() {
       audioBuffers = response;
       PLAY_BUTTON_ELEMENT.removeAttribute("disabled");
       TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
+      START_INPUT_ELEMENT.removeAttribute("disabled");
       ERROR_TEXT_ELEMENT.innerText = "";
     });
   }
@@ -112,7 +122,7 @@ function loadSong() {
 // Parameter file: url of the text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
-  parsedTab = [] // clear from previous tab
+  originalParsedTab = [] // clear from previous tab
   let tabs = readTabsFile(tabSource).split("\r\n");
   let currentMeasure = [];
   let currentStringQuantity;
@@ -123,7 +133,7 @@ function parseTabs(file) {
     }
 
     if (tabs[i] == "|") {
-      parsedTab.push(currentMeasure);
+      originalParsedTab.push(currentMeasure);
       currentMeasure = [];
     }
     else if(i < 3) {
@@ -179,11 +189,15 @@ function parseTabs(file) {
         if (currentHarmony != null) {
           currentMeasure.push(currentHarmony);
         }
+      } else {
+        throw "Soubor s taby je neplatný nebo poškozený."; // throw error if last line of tab is incorrect
       }
     }
   }
   if (isFileCorrect) {
     isParsed = true;
+    currentParsedTab = originalParsedTab;
+    START_INPUT_ELEMENT.max = originalParsedTab.length;
   }
 }
 
@@ -255,19 +269,19 @@ function setTempo() {
 // in current tab (without repetition)
 function getAllUsedNotes() {
   usedNotes = []; // clear from previous tab
-  for (let measure = 0; measure < parsedTab.length; measure++) {
-    for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
+  for (let measure = 0; measure < originalParsedTab.length; measure++) {
+    for (let harmony = 0; harmony < originalParsedTab[measure].length; harmony++) {
       for (let element = 0;
-           element < parsedTab[measure][harmony].length;
+           element < originalParsedTab[measure][harmony].length;
            element++) {
         // first and last element isn't note
         if (element != 0 &&
-            element != parsedTab[measure][harmony].length - 1) {
+            element != originalParsedTab[measure][harmony].length - 1) {
           if (!usedNotes.includes("sounds/"+
-              parsedTab[measure][harmony][element] + ".wav")
+              originalParsedTab[measure][harmony][element] + ".wav")
             ) {
             usedNotes.push("sounds/"+
-                            parsedTab[measure][harmony][element] + ".wav");
+                            originalParsedTab[measure][harmony][element] + ".wav");
           }
         }
       }
@@ -275,7 +289,7 @@ function getAllUsedNotes() {
   }
 }
 
-// Play audio sources asynchronously according to parsedTab array
+// Play audio sources asynchronously according to currentParsedTab array
 // Each note (audio source) plays for specific time according to note length
 async function playSong () {
   /* for version using Date
@@ -288,6 +302,7 @@ async function playSong () {
   PLAY_BUTTON_ELEMENT.style.padding = "0px 13.89px 11px 13px";
   PLAY_BUTTON_ELEMENT.style.fontSize = "30px";
   TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
+  START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
   SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
  
   if (isParsed) {
@@ -296,11 +311,11 @@ async function playSong () {
       let currentNoteLength;
       let newNoteDuration;
 
-      for (let i = 0; i < parsedTab.length; i++) {
-        for (let j = 0; j < parsedTab[i].length; j++) {
-          currentNoteLength = parsedTab[i][j][parsedTab[i][j].length - 1];
+      for (let i = 0; i < currentParsedTab.length; i++) {
+        for (let j = 0; j < currentParsedTab[i].length; j++) {
+          currentNoteLength = currentParsedTab[i][j][currentParsedTab[i][j].length - 1];
           newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
-          parsedTab[i][j][0] = newNoteDuration;
+          currentParsedTab[i][j][0] = newNoteDuration;
         }
       }
     }
@@ -308,8 +323,8 @@ async function playSong () {
     // debug only (execute time measurement)
     const start = Date.now();
 
-    for (let measure = 0; measure < parsedTab.length; measure++) {
-      for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
+    for (let measure = 0; measure < currentParsedTab.length; measure++) {
+      for (let harmony = 0; harmony < currentParsedTab[measure].length; harmony++) {
         if (!stopRequest) {
           /* for version using Date
           if (executeDate !== 0) {
@@ -319,60 +334,60 @@ async function playSong () {
           */
         
           // debug only (print current notes), remove this block later
-          switch (parsedTab[measure][harmony].length - 2) {
+          switch (currentParsedTab[measure][harmony].length - 2) {
             case 1: // 1 string played at once
-              console.log("Current note: " + parsedTab[measure][harmony][1]);
+              console.log("Current note: " + currentParsedTab[measure][harmony][1]);
               break;
             case 2: // 2 strings played at once
-              console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
-                          parsedTab[measure][harmony][2]);
+              console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
+                          currentParsedTab[measure][harmony][2]);
               break;
             case 3: // 3 strings played at once
-              console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
-                          parsedTab[measure][harmony][2] + " " +
-                          parsedTab[measure][harmony][3]);
+              console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
+                          currentParsedTab[measure][harmony][2] + " " +
+                          currentParsedTab[measure][harmony][3]);
               break;
               case 4: // 4 strings played at once
-                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
-                            parsedTab[measure][harmony][2] + " " +
-                            parsedTab[measure][harmony][3] + " " +
-                            parsedTab[measure][harmony][4]);
+                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
+                            currentParsedTab[measure][harmony][2] + " " +
+                            currentParsedTab[measure][harmony][3] + " " +
+                            currentParsedTab[measure][harmony][4]);
                 break;
               case 5: // 5 strings played at once
-                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
-                            parsedTab[measure][harmony][2] + " " +
-                            parsedTab[measure][harmony][3] + " " +
-                            parsedTab[measure][harmony][4] + " " +
-                            parsedTab[measure][harmony][5]);
+                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
+                            currentParsedTab[measure][harmony][2] + " " +
+                            currentParsedTab[measure][harmony][3] + " " +
+                            currentParsedTab[measure][harmony][4] + " " +
+                            currentParsedTab[measure][harmony][5]);
                 break;
               case 6: // 6 strings played at once
-                console.log("Current notes: " + parsedTab[measure][harmony][1] + " " +
-                            parsedTab[measure][harmony][2] + " " +
-                            parsedTab[measure][harmony][3] + " " +
-                            parsedTab[measure][harmony][4] + " " +
-                            parsedTab[measure][harmony][5] + " " +
-                            parsedTab[measure][harmony][6]);
+                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
+                            currentParsedTab[measure][harmony][2] + " " +
+                            currentParsedTab[measure][harmony][3] + " " +
+                            currentParsedTab[measure][harmony][4] + " " +
+                            currentParsedTab[measure][harmony][5] + " " +
+                            currentParsedTab[measure][harmony][6]);
                 break;
           }
           
-          for (let string = 0; string < parsedTab[measure][harmony].length - 2; string ++) {
+          for (let string = 0; string < currentParsedTab[measure][harmony].length - 2; string ++) {
             // play current note (get audioBuffer by note name, note length)
-            playAudio(audioBuffers[parsedTab[measure][harmony][string + 1]],
-              parsedTab[measure][harmony][0]);
+            playAudio(audioBuffers[currentParsedTab[measure][harmony][string + 1]],
+              currentParsedTab[measure][harmony][0]);
           }
           
           // wait till the audio stops playing
-          await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
+          await timer(currentParsedTab[measure][harmony][0]*1000 - DEVIATION);
 
           // for version using Date
-          // executeDate = Date.now() + parsedTab[measure][harmony][0]*1000;
+          // executeDate = Date.now() + currentParsedTab[measure][harmony][0]*1000;
         }
       }
     }
 
     // for version using Date
     // wait till the last audio stops playing
-    // await timer(parsedTab[parsedTab.length - 1][parsedTab[parsedTab.length - 1].length - 1][0]*1000);
+    // await timer(currentParsedTab[currentParsedTab.length - 1][currentParsedTab[currentParsedTab.length - 1].length - 1][0]*1000);
 
     // debug only (execute time measurement)
     const end = Date.now();
@@ -397,6 +412,7 @@ async function playSong () {
   PLAY_BUTTON_ELEMENT.style.padding = "9px 11px 13px 14.21px";
   PLAY_BUTTON_ELEMENT.style.fontSize = "20px";
   TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
+  START_INPUT_ELEMENT.removeAttribute("disabled");
   SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 }
 
@@ -429,6 +445,23 @@ function playAudio(audioBuffer, time) {
   audioSource.buffer = audioBuffer;
   audioSource.connect(audioContext.destination);
   audioSource.start(0, 0, time);
+}
+
+function checkStartValue() {
+  if (currentParsedTab.length == (originalParsedTab.length - START_INPUT_ELEMENT.value + 1)) {
+    // DEBUG console.log("Beze zmeny");
+    return;
+  } else {
+    // DEBUG console.log("Zmena");
+    changeStart();
+  }
+}
+function changeStart() {
+  currentParsedTab = [];
+
+  for (let i  = START_INPUT_ELEMENT.value - 1; i < originalParsedTab.length; i++) {
+    currentParsedTab.push(originalParsedTab[i]);
+  }
 }
 
 // Load cookie "currentTabSource" and set tabSource
