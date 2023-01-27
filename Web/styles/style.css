@@ -142,22 +142,6 @@ body {
     color: #2e2e2e;
     font-weight: bold;
 }
-/*
-@media screen and (max-width: 480px) {
-    #song-name-text {
-      font-size: 25px;
-    }
-    #artist-text {
-        font-size: 20px;
-    }
-    #tempo-text {
-        font-size: 12px;
-    }
-    #tempo-slider {
-        width: 175px;
-    }
-  }
-*/
 
 @media screen and (min-width: 1200px) {
     #tabsheet-img {
