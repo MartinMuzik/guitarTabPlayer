@@ -9,7 +9,7 @@ const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
 const SONG_SELECTOR_ELEMENT = document.getElementById("song-selector");
 const START_INPUT_ELEMENT = document.getElementById("start-input");
 const NOTE_REG_EXP = new RegExp(/^([1-6]_(([01][0-9])|20))|XXXX$/);
-const NOTE_LENGTH_REG_EXP = new RegExp(/^:((0[1248])|16|32)$/);
+const NOTE_LENGTH_REG_EXP = new RegExp(/^(:|.)((0[1248])|16|32)$/);
 // Returns a Promise that resolves after "ms" Milliseconds
 const timer = ms => new Promise(res => setTimeout(res, ms));
 // Should represent time (in ms) of processing code between playing each note
@@ -206,13 +206,22 @@ function parseHarmony(stringQuantity, tabs, i) {
   let currentHarmony = [];
   let currentNoteLength;
   let currentNoteDuration;
+  let isDot;
 
   if (NOTE_LENGTH_REG_EXP.test(tabs[i].substring(0, 3))) {
     // Set note length in seconds
     // 60/currentTempo = duration of 1 quarter note in seconds
     // (60/currentTempo)/(currentNoteLength/4) = duration of current note in seconds
     currentNoteLength = parseInt(tabs[i].substring(1, 3));
-    currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+    // note with dot multiples its duration 1.5x
+    if (tabs[i].substring(0, 1) == ":") {
+      currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+      isDot = false;
+    } else if (tabs[i].substring(0, 1) == ".") {
+      console.log("Tecka origo");
+      currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
+      isDot = true;
+    }
     currentHarmony.push(currentNoteDuration);
     
     // for debug
@@ -227,8 +236,10 @@ function parseHarmony(stringQuantity, tabs, i) {
       }
     }
     // Push current note length (for tempo change feature)
+    currentHarmony.push(isDot);
     currentHarmony.push(parseInt(tabs[i].substring(1, 3)));
-    if (currentHarmony.length == stringQuantity + 2) {
+
+    if (currentHarmony.length == stringQuantity + 3) {
       return currentHarmony;
     } 
   }
@@ -274,9 +285,10 @@ function getAllUsedNotes() {
       for (let element = 0;
            element < originalParsedTab[measure][harmony].length;
            element++) {
-        // first and last element isn't note
+        // first and last two elements aren't note
         if (element != 0 &&
-            element != originalParsedTab[measure][harmony].length - 1) {
+            element != originalParsedTab[measure][harmony].length - 1 &&
+            element != originalParsedTab[measure][harmony].length - 2) {
           if (!usedNotes.includes("sounds/"+
               originalParsedTab[measure][harmony][element] + ".wav")
             ) {
@@ -291,7 +303,7 @@ function getAllUsedNotes() {
 
 // Play audio sources asynchronously according to currentParsedTab array
 // Each note (audio source) plays for specific time according to note length
-async function playSong () {
+async function playSong () { 
   /* for version using Date
   // store Date (time) when the next note should start
   let executeDate = 0;
@@ -314,7 +326,14 @@ async function playSong () {
       for (let i = 0; i < currentParsedTab.length; i++) {
         for (let j = 0; j < currentParsedTab[i].length; j++) {
           currentNoteLength = currentParsedTab[i][j][currentParsedTab[i][j].length - 1];
-          newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+          // note with dot multiples its duration 1.5x
+          if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == false) {
+            newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+          } else if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == true) {
+            console.log("Zmena, tecka");
+            newNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
+          } 
+
           currentParsedTab[i][j][0] = newNoteDuration;
         }
       }
@@ -334,7 +353,7 @@ async function playSong () {
           */
         
           // debug only (print current notes), remove this block later
-          switch (currentParsedTab[measure][harmony].length - 2) {
+          switch (currentParsedTab[measure][harmony].length - 3) {
             case 1: // 1 string played at once
               console.log("Current note: " + currentParsedTab[measure][harmony][1]);
               break;
