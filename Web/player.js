@@ -22,8 +22,6 @@ let artist;
 let songName;
 let originalTempo;
 let currentTempo;
-// debug only (execute time measurement)
-let songDuration = 0;
 
 // Array containing parsed tab data
 // Format: [measure][note/harmony][note duration, note,..., note length]
@@ -98,9 +96,6 @@ function loadSong() {
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }
-
-  // only debug (time measure)
-  console.log("Song duration (original): " + songDuration*1000 + "ms");
 
   if(isParsed) {
     ERROR_TEXT_ELEMENT.innerText = "Načítá se";
@@ -223,9 +218,6 @@ function parseHarmony(stringQuantity, tabs, i) {
       isDot = true;
     }
     currentHarmony.push(currentNoteDuration);
-    
-    // for debug
-    songDuration += currentNoteDuration;
 
     // Check fret numbers
     for (let j = 0; j < stringQuantity; j++) {
@@ -330,7 +322,7 @@ async function playSong () {
           if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == false) {
             newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
           } else if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == true) {
-            console.log("Zmena, tecka");
+            console.log("Tecka pri zmene tempa");
             newNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
           } 
 
@@ -339,84 +331,19 @@ async function playSong () {
       }
     }
 
-    // debug only (execute time measurement)
-    const start = Date.now();
-
     for (let measure = 0; measure < currentParsedTab.length; measure++) {
       for (let harmony = 0; harmony < currentParsedTab[measure].length; harmony++) {
-        if (!stopRequest) {
-          /* for version using Date
-          if (executeDate !== 0) {
-            // wait till the audio stops playing (using Date for better accurate)
-            await timer(executeDate - Date.now());
-          }
-          */
-        
-          // debug only (print current notes), remove this block later
-          switch (currentParsedTab[measure][harmony].length - 3) {
-            case 1: // 1 string played at once
-              console.log("Current note: " + currentParsedTab[measure][harmony][1]);
-              break;
-            case 2: // 2 strings played at once
-              console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
-                          currentParsedTab[measure][harmony][2]);
-              break;
-            case 3: // 3 strings played at once
-              console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
-                          currentParsedTab[measure][harmony][2] + " " +
-                          currentParsedTab[measure][harmony][3]);
-              break;
-              case 4: // 4 strings played at once
-                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
-                            currentParsedTab[measure][harmony][2] + " " +
-                            currentParsedTab[measure][harmony][3] + " " +
-                            currentParsedTab[measure][harmony][4]);
-                break;
-              case 5: // 5 strings played at once
-                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
-                            currentParsedTab[measure][harmony][2] + " " +
-                            currentParsedTab[measure][harmony][3] + " " +
-                            currentParsedTab[measure][harmony][4] + " " +
-                            currentParsedTab[measure][harmony][5]);
-                break;
-              case 6: // 6 strings played at once
-                console.log("Current notes: " + currentParsedTab[measure][harmony][1] + " " +
-                            currentParsedTab[measure][harmony][2] + " " +
-                            currentParsedTab[measure][harmony][3] + " " +
-                            currentParsedTab[measure][harmony][4] + " " +
-                            currentParsedTab[measure][harmony][5] + " " +
-                            currentParsedTab[measure][harmony][6]);
-                break;
-          }
-          
+        if (!stopRequest) {        
           for (let string = 0; string < currentParsedTab[measure][harmony].length - 2; string ++) {
             // play current note (get audioBuffer by note name, note length)
             playAudio(audioBuffers[currentParsedTab[measure][harmony][string + 1]],
               currentParsedTab[measure][harmony][0]);
           }
-          
           // wait till the audio stops playing
           await timer(currentParsedTab[measure][harmony][0]*1000 - DEVIATION);
-
-          // for version using Date
-          // executeDate = Date.now() + currentParsedTab[measure][harmony][0]*1000;
         }
       }
     }
-
-    // for version using Date
-    // wait till the last audio stops playing
-    // await timer(currentParsedTab[currentParsedTab.length - 1][currentParsedTab[currentParsedTab.length - 1].length - 1][0]*1000);
-
-    // debug only (execute time measurement)
-    const end = Date.now();
-    if(!stopRequest || currentTempo != originalTempo) {
-      console.log(`Execution time: ${end - start} ms`);
-      console.log("Delay (from original): " + ((end - start) - songDuration*1000) + "ms");
-    } else {
-      console.log("Can't calculate delay.");
-    }
-    
   } else {
     ERROR_TEXT_ELEMENT.textContent = "Soubor s taby ještě nebyl zpracován " +
     "nebo je poškozený. Zkuste obnovit stránku.";
@@ -468,10 +395,8 @@ function playAudio(audioBuffer, time) {
 
 function checkStartValue() {
   if (currentParsedTab.length == (originalParsedTab.length - START_INPUT_ELEMENT.value + 1)) {
-    // DEBUG console.log("Beze zmeny");
     return;
   } else {
-    // DEBUG console.log("Zmena");
     changeStart();
   }
 }
