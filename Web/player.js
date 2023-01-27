@@ -213,7 +213,6 @@ function parseHarmony(stringQuantity, tabs, i) {
       currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
       isDot = false;
     } else if (tabs[i].substring(0, 1) == ".") {
-      console.log("Tecka origo");
       currentNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
       isDot = true;
     }
@@ -322,7 +321,6 @@ async function playSong () {
           if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == false) {
             newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
           } else if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == true) {
-            console.log("Tecka pri zmene tempa");
             newNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
           } 
 

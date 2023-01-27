@@ -17,12 +17,14 @@ const STRING_FOUR_SELECTOR = document.getElementById("string-four-selector");
 const STRING_FIVE_SELECTOR = document.getElementById("string-five-selector");
 const STRING_SIX_SELECTOR = document.getElementById("string-six-selector");
 const NOTE_LENGTH_SELECTOR = document.getElementById("note-length-selector");
+const DOT_RADIO = document.getElementsByName("dot-radio");
 
 let output = "";
 let metadataExist = false;
 let currentMeasureLength = 0;
-// array containing previous harmony, elements 0-5 are strings 1-6, element 6 is note length
-let previousHarmony = ["X", "X", "X", "X", "X", "X", "01"];
+// array containing previous harmony, elements 0-5 are strings 1-6,
+// element 6 is note length, elements 7,8 are dot_radio flags
+let previousHarmony = ["X", "X", "X", "X", "X", "X", "01", "0"];
 
 SAVE_METADATA_BUTTON.addEventListener("click", function() {
   saveMetadata();
@@ -98,7 +100,14 @@ function saveMetadata() {
 function selectNote(note) {
   if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
     ERROR_MESSAGE.innerText = "";
-    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    let length;
+
+    if (DOT_RADIO[0].checked) {
+      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    } else {
+      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
+    }
+    
     let audio = new Audio(`/sounds/${note}.wav`);
     audio.play();
 
@@ -135,7 +144,14 @@ function selectNote(note) {
 function playHarmony() {
   if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
     ERROR_MESSAGE.innerText = "";
-    let length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    let length;
+    
+    if (DOT_RADIO[0].checked) {
+      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    } else {
+      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
+    }
+
     let audios = getAudioFiles();
     audios.forEach(audio => {
         audio.play();
@@ -202,7 +218,11 @@ function measureManagement() {
     output += "|\n"; 
     OUTPUT_TEXTAREA.innerHTML += "|\r\n";
     return 1;
-  } else if (currentMeasureLength + (1 / NOTE_LENGTH_SELECTOR.value) <= 1) {
+  } else if (DOT_RADIO[0].checked && 
+    currentMeasureLength + (1 / NOTE_LENGTH_SELECTOR.value) <= 1) {
+    return 1;
+  } else if (DOT_RADIO[1].checked && 
+             currentMeasureLength + ((1 / NOTE_LENGTH_SELECTOR.value) * 1.5) <= 1) {
     return 1;
   } else {
     return 0;
@@ -212,10 +232,19 @@ function measureManagement() {
 function appendHarmony() {
   if (measureManagement()) {
     ERROR_MESSAGE.innerText = "";
-    currentMeasureLength += 1 / NOTE_LENGTH_SELECTOR.value;
+    if (DOT_RADIO[0].checked) {
+      currentMeasureLength += 1 / NOTE_LENGTH_SELECTOR.value;
+    } else {
+      currentMeasureLength += (1 / NOTE_LENGTH_SELECTOR.value) * 1.5;
+    }
 
     let noteList = getStringInfo();
-    let notes = ":" + NOTE_LENGTH_SELECTOR.value;
+    let notes;
+    if (DOT_RADIO[0].checked) {
+      notes = ":" + NOTE_LENGTH_SELECTOR.value;
+    } else {
+      notes = "." + NOTE_LENGTH_SELECTOR.value;
+    }
 
     if (!metadataExist) {
       saveMetadata();
@@ -245,7 +274,11 @@ function removeLastHarmony() {
   if (lines.length > 4) {
     output = "";
     if (lines[lines.length - 2].length > 7) { // if the row includes harmony
-      currentMeasureLength -= 1 / lines[lines.length - 2].substring(1,3);
+      if (DOT_RADIO[0].checked) {
+        currentMeasureLength -= 1 / lines[lines.length - 2].substring(1,3);
+      } else {
+        currentMeasureLength -= (1 / lines[lines.length - 2].substring(1,3)) * 1.5;
+      }
     } else { // reset measure length when removing | symbol
       currentMeasureLength = 1;
     }
@@ -266,6 +299,8 @@ function saveHarmony() {
   previousHarmony[4] = STRING_FIVE_SELECTOR.value;
   previousHarmony[5] = STRING_SIX_SELECTOR.value;
   previousHarmony[6] = NOTE_LENGTH_SELECTOR.value;
+  previousHarmony[7] = DOT_RADIO[0].checked;
+  previousHarmony[8] = DOT_RADIO[1].checked;
 }
 
 function loadLastHarmony() {
@@ -276,6 +311,8 @@ function loadLastHarmony() {
   STRING_FIVE_SELECTOR.value = previousHarmony[4];
   STRING_SIX_SELECTOR.value = previousHarmony[5];
   NOTE_LENGTH_SELECTOR.value = previousHarmony[6];
+  DOT_RADIO[0].checked = previousHarmony[7];
+  DOT_RADIO[1].checked = previousHarmony[8];
 }
 
 // prepare output data for export without affecting the current data
