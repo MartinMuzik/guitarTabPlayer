@@ -1,0 +1,7 @@
+<option value="beethoven-fur_elise">Beethoven - Für Elise</option>
+<option value="arctic_monkeys-do_i_wanna_know">Arctic Monkeys - Do I Wanna Know?</option>
+<option value="the_cranberries-zombie">The Cranberries - Zombie (akordy)</option>
+<option value="a_moll_pentatonic">A Moll pentatonic</option>
+<option value="all_notes">All notes</option>
+<option value="experimental">Experimental</option>
+<option value="red_hot_chilli_peppers-californication">Red Hot Chilli Peppers - Californication</option>

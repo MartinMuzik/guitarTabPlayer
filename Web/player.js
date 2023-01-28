@@ -25,8 +25,7 @@ let currentTempo;
 
 // Array containing parsed tab data
 // Format: [measure][note/harmony][note duration, note,..., note length]
-let originalParsedTab = [];
-let currentParsedTab = [];
+let parsedTab = [];
 // Array containing names of all notes used
 // in current song (without repetition) 
 let usedNotes = [];
@@ -49,6 +48,7 @@ let isTempoChanged = false;
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
+loadLibrary();
 getCookie();
 
 // AudioContext would not work without some interaction with a user
@@ -63,9 +63,9 @@ PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
     stopRequest = true;
     PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
   } else {
-    if (START_INPUT_ELEMENT.value <= originalParsedTab.length) {
+    if (START_INPUT_ELEMENT.value <= parsedTab.length) {
       ERROR_TEXT_ELEMENT.textContent = "";
-      checkStartValue();
+      // StartValue();
       playSong();
     } else {
       ERROR_TEXT_ELEMENT.textContent = "Zvolený začáteční takt přesahuje délku skladby.";
@@ -117,7 +117,7 @@ function loadSong() {
 // Parameter file: url of the text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs(file) {
-  originalParsedTab = [] // clear from previous tab
+  parsedTab = [] // clear from previous loaded tab
   let tabs = readTabsFile(tabSource).split("\r\n");
   let currentMeasure = [];
   let currentStringQuantity;
@@ -128,7 +128,7 @@ function parseTabs(file) {
     }
 
     if (tabs[i] == "|") {
-      originalParsedTab.push(currentMeasure);
+      parsedTab.push(currentMeasure);
       currentMeasure = [];
     }
     else if(i < 3) {
@@ -191,8 +191,7 @@ function parseTabs(file) {
   }
   if (isFileCorrect) {
     isParsed = true;
-    currentParsedTab = originalParsedTab;
-    START_INPUT_ELEMENT.max = originalParsedTab.length;
+    START_INPUT_ELEMENT.max = parsedTab.length;
   }
 }
 
@@ -239,8 +238,32 @@ function parseHarmony(stringQuantity, tabs, i) {
   return null;
 }
 
-// Read text file cointaing tabs with XHR
+// Read text file cointaing tabs
 function readTabsFile(file) {
+  let fileContent = readFile(file);
+
+  if (fileContent) {
+    return fileContent;
+  }
+
+  isFileCorrect = false;
+  throw "Soubor s taby nebyl nalezen.";
+}
+
+// Read library.txt file
+function readLibraryFile() {
+  let fileContent = readFile("library.txt");
+
+  if (fileContent) {
+    return fileContent;
+  }
+
+  isFileCorrect = false;
+  throw "Soubor s knihovnou tabulatur nebyl nalezen.";
+}
+
+// Read text file with XHR
+function readFile(file) {
   let fileContent;
   let rawFile = new XMLHttpRequest();
 
@@ -254,12 +277,7 @@ function readTabsFile(file) {
   }
 
   rawFile.send(null);
-  if (fileContent) {
-    return fileContent;
-  }
-
-  isFileCorrect = false;
-  throw "Soubor s taby nebyl nalezen.";
+  return fileContent;
 }
 
 // set currentTempo
@@ -271,20 +289,20 @@ function setTempo() {
 // in current tab (without repetition)
 function getAllUsedNotes() {
   usedNotes = []; // clear from previous tab
-  for (let measure = 0; measure < originalParsedTab.length; measure++) {
-    for (let harmony = 0; harmony < originalParsedTab[measure].length; harmony++) {
+  for (let measure = 0; measure < parsedTab.length; measure++) {
+    for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
       for (let element = 0;
-           element < originalParsedTab[measure][harmony].length;
+           element < parsedTab[measure][harmony].length;
            element++) {
         // first and last two elements aren't note
         if (element != 0 &&
-            element != originalParsedTab[measure][harmony].length - 1 &&
-            element != originalParsedTab[measure][harmony].length - 2) {
+            element != parsedTab[measure][harmony].length - 1 &&
+            element != parsedTab[measure][harmony].length - 2) {
           if (!usedNotes.includes("sounds/"+
-              originalParsedTab[measure][harmony][element] + ".wav")
+              parsedTab[measure][harmony][element] + ".wav")
             ) {
             usedNotes.push("sounds/"+
-                            originalParsedTab[measure][harmony][element] + ".wav");
+                            parsedTab[measure][harmony][element] + ".wav");
           }
         }
       }
@@ -292,15 +310,12 @@ function getAllUsedNotes() {
   }
 }
 
-// Play audio sources asynchronously according to currentParsedTab array
+// Play audio sources asynchronously according to parsedTab array
 // Each note (audio source) plays for specific time according to note length
 async function playSong () { 
-  /* for version using Date
-  // store Date (time) when the next note should start
-  let executeDate = 0;
-  */
   isPlaying = true;
   stopRequest = false;
+  startFrom = START_INPUT_ELEMENT.value - 1;
   PLAY_BUTTON_ELEMENT.innerText = "■";
   PLAY_BUTTON_ELEMENT.style.padding = "0px 13.89px 11px 13px";
   PLAY_BUTTON_ELEMENT.style.fontSize = "30px";
@@ -311,34 +326,19 @@ async function playSong () {
   if (isParsed) {
     // Change note duration according to the new tempo
     if (isTempoChanged) {
-      let currentNoteLength;
-      let newNoteDuration;
-
-      for (let i = 0; i < currentParsedTab.length; i++) {
-        for (let j = 0; j < currentParsedTab[i].length; j++) {
-          currentNoteLength = currentParsedTab[i][j][currentParsedTab[i][j].length - 1];
-          // note with dot multiples its duration 1.5x
-          if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == false) {
-            newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
-          } else if (currentParsedTab[i][j][currentParsedTab[i][j].length - 2] == true) {
-            newNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
-          } 
-
-          currentParsedTab[i][j][0] = newNoteDuration;
-        }
-      }
+      changeTempo();
     }
 
-    for (let measure = 0; measure < currentParsedTab.length; measure++) {
-      for (let harmony = 0; harmony < currentParsedTab[measure].length; harmony++) {
+    for (let measure = startFrom; measure < parsedTab.length; measure++) {
+      for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
         if (!stopRequest) {        
-          for (let string = 0; string < currentParsedTab[measure][harmony].length - 2; string ++) {
+          for (let string = 0; string < parsedTab[measure][harmony].length - 2; string ++) {
             // play current note (get audioBuffer by note name, note length)
-            playAudio(audioBuffers[currentParsedTab[measure][harmony][string + 1]],
-              currentParsedTab[measure][harmony][0]);
+            playAudio(audioBuffers[parsedTab[measure][harmony][string + 1]],
+              parsedTab[measure][harmony][0]);
           }
           // wait till the audio stops playing
-          await timer(currentParsedTab[measure][harmony][0]*1000 - DEVIATION);
+          await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
         }
       }
     }
@@ -391,18 +391,22 @@ function playAudio(audioBuffer, time) {
   audioSource.start(0, 0, time);
 }
 
-function checkStartValue() {
-  if (currentParsedTab.length == (originalParsedTab.length - START_INPUT_ELEMENT.value + 1)) {
-    return;
-  } else {
-    changeStart();
-  }
-}
-function changeStart() {
-  currentParsedTab = [];
+function changeTempo() {
+  let currentNoteLength;
+  let newNoteDuration;
 
-  for (let i  = START_INPUT_ELEMENT.value - 1; i < originalParsedTab.length; i++) {
-    currentParsedTab.push(originalParsedTab[i]);
+  for (let i = 0; i < parsedTab.length; i++) {
+    for (let j = 0; j < parsedTab[i].length; j++) {
+      currentNoteLength = parsedTab[i][j][parsedTab[i][j].length - 1];
+      // note with dot multiples its duration 1.5x
+      if (parsedTab[i][j][parsedTab[i][j].length - 2] == false) {
+        newNoteDuration = ((60/currentTempo)/(currentNoteLength/4));
+      } else if (parsedTab[i][j][parsedTab[i][j].length - 2] == true) {
+        newNoteDuration = ((60/currentTempo)/(currentNoteLength/4)) * 1.5;
+      } 
+
+      parsedTab[i][j][0] = newNoteDuration;
+    }
   }
 }
 
@@ -418,4 +422,13 @@ function getCookie() {
 // set cookie "currentTabSource" value to newly selected song
 function setCookie() {
   document.cookie = "currentTabSource=" + SONG_SELECTOR_ELEMENT.value;
+}
+
+// Load library content to song-selector element
+function loadLibrary() {
+  try {
+    SONG_SELECTOR_ELEMENT.innerHTML =  readLibraryFile();
+  } catch(e) {
+    ERROR_TEXT_ELEMENT.textContent = e;
+  }
 }
