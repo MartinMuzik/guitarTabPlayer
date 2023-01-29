@@ -15,16 +15,26 @@
       <div id="admin-menu-items">
         <li class="admin-menu-li"><a class="admin-menu-a" href="library.html">Knihovna</a></li>
         <li class="admin-menu-li"><a class="admin-menu-a admin-menu-active">Přidat tab</a></li>
-        <li class="admin-menu-li"><a class="admin-menu-a" href="generator.html">Tvůrce tabů</a></li>
+        <li class="admin-menu-li"><a class="admin-menu-a" href="generator.html">Vytvořit tab</a></li>
         <li class="admin-menu-li" id="admin-logout-btn"><a class="admin-menu-a" href="index.html">Odhlásit se</a></li>
       </div>
     </ul>
   </div>
   <div id="admin-main-content">
     <h2 id="admin-h2">Přidat tab</h2>
+    <div id="add-tab-controls">
+      <label for="upload-tab-btn" class="file-upload-btn" id="upload-tab-label">Vybrat soubor</label>
+      <input id="upload-tab-btn" type="file" accept=".txt">
+      <button id="check-tab-btn" class="generator-btn">Zkontrolovat</button> <br>
+      <label for="display-name-input">Zobrazovaný název:</label><br>
+      <input type="text" id="display-name-input" class="add-inputs" name="display-name-input"><br>
+      <label for="file-name-input">Název souboru na serveru:</label><br>
+      <input type="text" id="file-name-input" class="add-inputs" name="file-name-input"><br>
+      <button id="add-btn" class="generator-btn">Přidat do knihovny</button>
   </div>
   <div id="footer">
     <p id="footer-text">Martin Mužík 2022/2023</p>
   </div>
+  <script src="add_tab.js"></script>
 </body>
 </html>

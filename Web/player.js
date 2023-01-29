@@ -17,7 +17,7 @@ const timer = ms => new Promise(res => setTimeout(res, ms));
 // before playing next note 
 const DEVIATION = 3.4;
 
-let tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
+let tabSource;
 let artist;
 let songName;
 let originalTempo;
@@ -49,6 +49,7 @@ PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
 loadLibrary();
+tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
 getCookie();
 
 // AudioContext would not work without some interaction with a user
@@ -259,7 +260,7 @@ function readLibraryFile() {
   }
 
   isFileCorrect = false;
-  throw "Soubor s knihovnou tabulatur nebyl nalezen.";
+  throw "Soubor s knihovnou tabulatur nebyl nalezen nebo je poškozen.";
 }
 
 // Read text file with XHR
@@ -427,8 +428,45 @@ function setCookie() {
 // Load library content to song-selector element
 function loadLibrary() {
   try {
-    SONG_SELECTOR_ELEMENT.innerHTML =  readLibraryFile();
+    let fileContent = readLibraryFile();
+    let libraryHTML = prepareLibrary(fileContent);
+    console.log(libraryHTML);
+    SONG_SELECTOR_ELEMENT.innerHTML = libraryHTML;
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }
+}
+
+function prepareLibrary(fileContent) {
+  let result = "";
+  let displayNames = getDisplayNames(fileContent);
+  let fileNames = getFileNames(fileContent);
+
+  for (let i = 0; i < displayNames.length; i++) {
+    result += `<option value="${fileNames[i]}">${displayNames[i]}</option>`;
+  }
+  
+  return result;
+}
+
+function getDisplayNames(fileContent) {
+  let lines = fileContent.split("\r\n");
+  let displayNames = [];
+
+  for (let i = 1; i < lines.length; i += 2) {
+    displayNames.push(lines[i]);
+  }
+
+  return displayNames;
+}
+
+function getFileNames(fileContent) {
+  let lines = fileContent.split("\r\n");
+  let fileNames = [];
+
+  for (let i = 0; i < lines.length - 1; i += 2) {
+    fileNames.push(lines[i]);
+  }
+
+  return fileNames;
 }

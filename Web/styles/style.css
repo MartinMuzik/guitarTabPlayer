@@ -42,6 +42,7 @@ body {
     font-weight: bold;
     padding: 15px 15px;
     border-radius: 30px;
+    cursor: pointer;
 }
 .player-btns:hover {
     background-color: #F71919;
@@ -57,7 +58,7 @@ body {
     padding: 9px 11px 13px 14.21px;
     border-radius: 22.5px;
     margin-right: 20px;
-    margin-left: 10px
+    margin-left: 10px;
 }
 #load-btn {
     margin-left: 10px;
@@ -179,6 +180,7 @@ body {
 .admin-menu-li {
     float: left;
     display: inline;
+    cursor: pointer;
 }
 .admin-menu-a {
     display: block;
@@ -202,7 +204,9 @@ body {
     width: 1200px;
     display: block;
     margin: auto;
-    padding-left: 10px;
+}
+area {
+    cursor: pointer;
 }
 #admin-h2 {
     margin-left: 15px;
@@ -248,12 +252,16 @@ body {
     font-weight: bold;
     padding: 8px 12px;
     border-radius: 16px;
+    cursor: pointer;
 }
 .generator-btn:hover {
     background-color: #F71919;
 }
 .generator-btn:active {
     background-color: #cc1010;
+}
+.generator-btn:disabled {
+    background-color: #FA93A7;
 }
 .generator-selector {
     border-radius: 8px;
@@ -279,6 +287,34 @@ body {
     font-weight: bolder;
     font-style: italic;
 }
+.dot-radio {
+    accent-color: #FF3434;
+}
+#add-tab-controls {
+    margin-left: 15px;
+}
+.add-inputs {
+    resize: none;
+    border-radius: 10px;
+    border-color: #FF3434;
+    border-width: 2px;
+    padding: 4px;
+    color: #2e2e2e;
+    font-weight: bold;
+    width: 300px;
+}
+#upload-tab-btn {
+    display: none;
+}
+.file-upload-btn {
+    border: 1px solid #FF3434;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+#check-tab-btn {
+    margin-left: 8px;
+}
 
 @media screen and (min-width: 1200px) {
     #admin-menu-items {
@@ -293,5 +329,14 @@ body {
     }
     #output-div {
         margin-left: 17.5%;
+    }
+    #add-tab-controls {
+        margin-left: 17.5%;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    #fretboard-img {
+        margin-left: 10px;
     }
 }
