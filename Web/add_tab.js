@@ -33,11 +33,15 @@ ADD_BTN.addEventListener("click", function() {
 
 CHECK_BTN.addEventListener("click", function() {
   validateTabFile();
-  console.log("Is error: " + isError);
-  setNames();
+  if (!isError) {
+    setNames();
+  } else {
+    alert = "Soubor s taby je neplatný";
+  }
 });
 
 function addTab() {
+  isError = false;
   validateTabFile();
   validateDisplayName();
   validateFileName();
@@ -55,6 +59,8 @@ function addTab() {
         //$(ADD_ERROR_LABEL).html(response);
         alert(response);
       });
+    
+    console.log("Tab has been uploaded");
   }
 }
 
@@ -71,6 +77,10 @@ function validateFileName() {
   if (isFound) {
     alert("Soubor se stejným názvem již existuje");
   }
+  if (FILE_NAME_ELEMENT.value.length == 0) {
+    alert("Název souboru nesmí zůstat prázdný");
+    isError = true;
+  }
 }
 
 function validateDisplayName() {
@@ -85,6 +95,11 @@ function validateDisplayName() {
 
   if (isFound) {
     alert("Tab se stejným názvem již existuje");
+  }
+
+  if (DISPLAY_NAME_ELEMENT.value.length == 0) {
+    alert("Název tabu nesmí zůstat prázdný");
+    isError = true;
   }
 }
 
