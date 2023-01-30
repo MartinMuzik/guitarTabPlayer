@@ -1,8 +1,10 @@
 const UPLOAD_TAB_ELEMENT = document.getElementById("upload-tab-btn");
+const UPLOAD_TAB_LABEL = document.getElementById("upload-tab-label");
 const DISPLAY_NAME_ELEMENT = document.getElementById("display-name-input");
 const FILE_NAME_ELEMENT = document.getElementById("file-name-input");
 const ADD_BTN = document.getElementById("add-btn");
 const CHECK_BTN = document.getElementById("check-tab-btn");
+//const ADD_ERROR_LABEL = document.getElementById("tab-adding-error");
 
 let tabContent;
 let artist;
@@ -11,12 +13,18 @@ let usedDisplayNames = [];
 let usedFileNames = [];
 let isError = false;
 
+ADD_BTN.setAttribute("disabled", "disabled");
+CHECK_BTN.setAttribute("disabled", "disabled");
 getUsedNames();
 
 
 UPLOAD_TAB_ELEMENT.addEventListener("change", handleFile, false);
 function handleFile() {
+  UPLOAD_TAB_LABEL.innerText = "Změnit soubor";
+  isError = false;
   parseUploadedFile(this.files[0]);
+  ADD_BTN.removeAttribute("disabled");
+  CHECK_BTN.removeAttribute("disabled");
 }
 
 ADD_BTN.addEventListener("click", function() {
@@ -25,7 +33,7 @@ ADD_BTN.addEventListener("click", function() {
 
 CHECK_BTN.addEventListener("click", function() {
   validateTabFile();
-  console.log(isError);
+  console.log("Is error: " + isError);
   setNames();
 });
 
@@ -33,6 +41,21 @@ function addTab() {
   validateTabFile();
   validateDisplayName();
   validateFileName();
+
+  if(!isError) {
+    $.ajax({
+      method: "POST",
+      url: "add_tab.php",
+      data: { tab: tabContent,
+              displayName: DISPLAY_NAME_ELEMENT.value,
+              fileName: FILE_NAME_ELEMENT.value
+            }
+    })
+      .done(function( response ) {
+        //$(ADD_ERROR_LABEL).html(response);
+        alert(response);
+      });
+  }
 }
 
 function validateFileName() {
@@ -67,7 +90,7 @@ function validateDisplayName() {
 
 // check tab validity by some conditions, not 100% accurate
 function validateTabFile() {
-  let tabs = tabContent.split("\n");
+  let tabs = tabContent.split("\r\n");
   let isValid = true;
 
   if (tabs.length < 4) {
@@ -187,6 +210,70 @@ function parseUploadedFile(file) {
   }
 }
 
+// set recommended unique display and file name 
 function setNames() {
+  let isSet = false;
+  let tabs = tabContent.split("\r\n");
+  let currentDisplayName = tabs[0] + " - " + tabs[1];
+  let currentFileName;
+  let displaySuffix = 0;
+  let fileSuffix = 0;
+
+  // set display name
+  while (!isSet) {
+    let exists = false;
+
+    for (let i = 0; i < usedDisplayNames.length; i++) {
+      if (currentDisplayName == usedDisplayNames[i]) {
+          exists = true;
+      }
+    }
+
+    if (exists) {
+      if (displaySuffix < 0) {
+        currentDisplayName = currentDisplayName.slice(0, -1) + displaySuffix;
+        displaySuffix++;
+      } else {
+        currentDisplayName += " #2";
+        displaySuffix = 2;
+      }
+    } else {
+      DISPLAY_NAME_ELEMENT.value = currentDisplayName;
+      isSet = true;
+    }
+  }
+
+  // set file name
+  isSet = false;
+
+  currentFileName = (tabs[0].replaceAll(" ", "_") + "-" + tabs[1].replaceAll(" ", "_")).toLowerCase();
+
+  while (!isSet) {
+    let exists = false;
+
+    if (displaySuffix > 0) {
+      currentFileName += "_" + displaySuffix;
+    }
+
+    for (let i = 0; i < usedFileNames.length; i++) {
+      if (currentFileName == usedFileNames[i]) {
+          exists = true;
+      }
+    }
+
+    if (exists) {
+      if (fileSuffix < 0) {
+        currentFileName = currentFileName.slice(0, -1) + fileSuffix;
+        fileSuffix++;
+      } else {
+        currentFileName += "_2";
+        fileSuffix = 2;
+      }
+    } else {
+      FILE_NAME_ELEMENT.value = currentFileName;
+      isSet = true;
+    }
+  }
+
 
 }

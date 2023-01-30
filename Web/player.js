@@ -430,7 +430,6 @@ function loadLibrary() {
   try {
     let fileContent = readLibraryFile();
     let libraryHTML = prepareLibrary(fileContent);
-    console.log(libraryHTML);
     SONG_SELECTOR_ELEMENT.innerHTML = libraryHTML;
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;

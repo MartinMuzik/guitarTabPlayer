@@ -55,7 +55,7 @@ ADD_TO_LIBRARY_BUTTON.addEventListener("click", function() {
 function saveMetadata() {
   if (TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
     ERROR_MESSAGE.innerText = "";
-    let lines = output.split("\n");
+    let lines = output.split("\r\n");
 
     if (ARTIST_INPUT.value != "") {
       lines[0] = ARTIST_INPUT.value;
@@ -73,23 +73,22 @@ function saveMetadata() {
 
     output = "";
     
-    // Append data back to output, if metadataExist last line doesn't include \n
+    // Append data back to output, if metadataExist last line doesn't include \r\n
     if (!metadataExist) {
       for(let i = 0; i < lines.length; i++) {
-        output += lines[i] + "\n";
+        output += lines[i] + "\r\n";
       }
     } else {
       for(let i = 0; i < lines.length; i++) {
         if (i < lines.length - 1) {
-          output += lines[i] + "\n";
+          output += lines[i] + "\r\n";
         } else {
           output += lines[i];
         }
       }
     }
 
-
-    OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+    OUTPUT_TEXTAREA.innerHTML = output
     metadataExist = true;
   } else {
     ERROR_MESSAGE.innerText = "Error: Tempo mimo rozsah.";
@@ -215,7 +214,7 @@ function resetHarmony() {
 function measureManagement() {
   if (currentMeasureLength == 1) {
     currentMeasureLength = 0;
-    output += "|\n"; 
+    output += "|\r\n"; 
     OUTPUT_TEXTAREA.innerHTML += "|\r\n";
     return 1;
   } else if (DOT_RADIO[0].checked && 
@@ -258,8 +257,8 @@ function appendHarmony() {
       });
     }
     
-    output += notes + "\n";
-    OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+    output += notes + "\r\n";
+    OUTPUT_TEXTAREA.innerHTML = output
   } else {
     ERROR_MESSAGE.innerText = "Délka not v tomto taktu neodpovídá 4/4 taktu.";
   }
@@ -269,7 +268,7 @@ function appendHarmony() {
 
 // remove last row
 function removeLastHarmony() {
-  let lines = output.split("\n");
+  let lines = output.split("\r\n");
 
   if (lines.length > 4) {
     output = "";
@@ -284,10 +283,10 @@ function removeLastHarmony() {
     }
 
     for(let i = 0; i < (lines.length - 2); i++) {
-      output += lines[i] + "\n";
+      output += lines[i] + "\r\n";
     }
 
-    OUTPUT_TEXTAREA.innerHTML = output.replace("\n", "\r\n"); // HTML textarea requires \r\n for new line
+    OUTPUT_TEXTAREA.innerHTML = output
   }
 }
 
@@ -317,7 +316,7 @@ function loadLastHarmony() {
 
 // prepare output data for export without affecting the current data
 function prepareForExport() {
-  let lines = output.split("\n");
+  let lines = output.split("\r\n");
   let realOutput = "";
 
   if (lines[lines.length - 2] != "|") {
@@ -326,7 +325,7 @@ function prepareForExport() {
   else {
     for(let i = 0; i < lines.length; i++) {
       if (i < lines.length - 2) {
-        realOutput += lines[i] + "\n";
+        realOutput += lines[i] + "\r\n";
       } else {
         realOutput += lines[i];
       }
