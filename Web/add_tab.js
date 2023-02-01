@@ -15,7 +15,6 @@ let isError = false;
 
 ADD_BTN.setAttribute("disabled", "disabled");
 CHECK_BTN.setAttribute("disabled", "disabled");
-getUsedNames();
 
 
 UPLOAD_TAB_ELEMENT.addEventListener("change", handleFile, false);
@@ -32,11 +31,10 @@ ADD_BTN.addEventListener("click", function() {
 });
 
 CHECK_BTN.addEventListener("click", function() {
+  getUsedNames();
   validateTabFile();
   if (!isError) {
     setNames();
-  } else {
-    alert = "Soubor s taby je neplatný";
   }
 });
 
@@ -51,25 +49,15 @@ function addTab() {
       method: "POST",
       url: "add_tab.php",
       data: { tab: tabContent,
-              displayName: DISPLAY_NAME_ELEMENT.value,
-              fileName: FILE_NAME_ELEMENT.value,
-              requestType: "write"
+              displayName: DISPLAY_NAME_ELEMENT.value.trim(),
+              fileName: FILE_NAME_ELEMENT.value.trim(),
             }
     })
       .done(function( response ) {
-        //$(ADD_ERROR_LABEL).html(response);
         if (confirm(response)) {
           document.location.reload();
         }
       });
-    /*
-    const xhttp = new XMLHttpRequest();
-    xhttp.onload = function() {
-      alert(this.responseText);
-    }
-    xhttp.open("POST", "add_tab.php");
-    xhttp.send("requestType=write&tab=" + tabContent + "&displayName=" + DISPLAY_NAME_ELEMENT.value + "&fileName=" + FILE_NAME_ELEMENT.value);
-    */
   }
 }
 
@@ -77,7 +65,7 @@ function validateFileName() {
   let isFound = false;
 
   for (let i = 0; i < usedFileNames.length; i++) {
-    if (FILE_NAME_ELEMENT.value == usedFileNames[i]) {
+    if (FILE_NAME_ELEMENT.value.trim() == usedFileNames[i]) {
       isFound = true;
       isError = true;
     }
@@ -86,7 +74,7 @@ function validateFileName() {
   if (isFound) {
     alert("Soubor se stejným názvem již existuje");
   }
-  if (FILE_NAME_ELEMENT.value.length == 0) {
+  if (FILE_NAME_ELEMENT.value.trim().length == 0) {
     alert("Název souboru nesmí zůstat prázdný");
     isError = true;
   }
@@ -96,7 +84,7 @@ function validateDisplayName() {
   let isFound = false;
   
   for (let i = 0; i < usedDisplayNames.length; i++) {
-    if (DISPLAY_NAME_ELEMENT.value == usedDisplayNames[i]) {
+    if (DISPLAY_NAME_ELEMENT.value.trim() == usedDisplayNames[i]) {
         isFound = true;
         isError = true;
     }
@@ -106,7 +94,7 @@ function validateDisplayName() {
     alert("Tab se stejným názvem již existuje");
   }
 
-  if (DISPLAY_NAME_ELEMENT.value.length == 0) {
+  if (DISPLAY_NAME_ELEMENT.value.trim().length == 0) {
     alert("Název tabu nesmí zůstat prázdný");
     isError = true;
   }
@@ -154,6 +142,7 @@ function validateTabFile() {
   }
   if (!isValid) {
     isError = true;
+    alert("Soubor s taby je neplatný");
   }
 }
 
@@ -213,20 +202,14 @@ function getDisplayNames(fileContent) {
 // there is not any other file
 function getFileNames(fileContent) {
   let fileNames = getFileNamesFromLibrary(fileContent);
-  /*
-  let serverFileNames = getFileNamesFromServer();
 
-  // merge these two arrays (without repetition)
-  for(let i = 0; i < serverFileNames.length; i++) {
-    for (let j = 0; j < fileNames.length; j++) {
-      if (serverFileNames[i].slice(0, -4) != fileNames[j]) { // slice .txt suffix
-        fileNames.push(serverFileNames[i].slice(0, -4));
-      }
-    }
-  }
+  let serverFileNames = readFile("scandir.php").substring(3).split(".txt"); // crop ... from file list
+  serverFileNames.pop(); // remove last empty element
 
-  */
-  return fileNames;
+  // merge these two arrays (without duplicates)
+  let fileNamesFinal = fileNames.concat(serverFileNames.filter((item) => fileNames.indexOf(item) < 0));
+
+  return fileNamesFinal;
 }
 
 function getFileNamesFromLibrary(fileContent) {
@@ -237,29 +220,6 @@ function getFileNamesFromLibrary(fileContent) {
     fileNames.push(lines[i]);
   }
 
-  return fileNames;
-}
-
-function getFileNamesFromServer() {
-  let fileNames;
-  
-  /*
-  $.ajax({
-    method: "POST",
-    url: "add_tab.php",
-    data: { requestType: "scandir" }
-  })
-    .done(function( response ) {
-      fileNames = response;
-    });
-  */
-
-  if (fileNames === false) {
-    alert("Nelze se připojit k serveru.");
-    isError = true;
-    return null;
-  }
-  
   return fileNames;
 }
 

@@ -107,7 +107,7 @@ function selectNote(note) {
       length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
     }
     
-    let audio = new Audio(`/sounds/${note}.wav`);
+    let audio = new Audio(`sounds/${note}.wav`);
     audio.play();
 
     setTimeout(function(){
@@ -171,7 +171,7 @@ function getAudioFiles() {
   let audios = [];
 
   notes.forEach(note => {
-    audios.push(new Audio(`/sounds/${note}.wav`));
+    audios.push(new Audio(`sounds/${note}.wav`));
   });
 
   return audios;
