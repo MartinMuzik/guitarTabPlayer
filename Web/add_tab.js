@@ -52,15 +52,24 @@ function addTab() {
       url: "add_tab.php",
       data: { tab: tabContent,
               displayName: DISPLAY_NAME_ELEMENT.value,
-              fileName: FILE_NAME_ELEMENT.value
+              fileName: FILE_NAME_ELEMENT.value,
+              requestType: "write"
             }
     })
       .done(function( response ) {
         //$(ADD_ERROR_LABEL).html(response);
-        alert(response);
+        if (confirm(response)) {
+          document.location.reload();
+        }
       });
-    
-    console.log("Tab has been uploaded");
+    /*
+    const xhttp = new XMLHttpRequest();
+    xhttp.onload = function() {
+      alert(this.responseText);
+    }
+    xhttp.open("POST", "add_tab.php");
+    xhttp.send("requestType=write&tab=" + tabContent + "&displayName=" + DISPLAY_NAME_ELEMENT.value + "&fileName=" + FILE_NAME_ELEMENT.value);
+    */
   }
 }
 
@@ -162,7 +171,7 @@ function getUsedNames() {
 }
 
 function readLibraryFileAdmin() {
-  let fileContent = readFile("library.txt");
+  let fileContent = readFile("library.txt?date=" + Date.now()); // disable caching this file (by parameter date)
 
   if (fileContent) {
     return fileContent;
@@ -199,8 +208,28 @@ function getDisplayNames(fileContent) {
 
   return displayNames;
 }
-  
+
+// get used file names from library and scan server storage if
+// there is not any other file
 function getFileNames(fileContent) {
+  let fileNames = getFileNamesFromLibrary(fileContent);
+  /*
+  let serverFileNames = getFileNamesFromServer();
+
+  // merge these two arrays (without repetition)
+  for(let i = 0; i < serverFileNames.length; i++) {
+    for (let j = 0; j < fileNames.length; j++) {
+      if (serverFileNames[i].slice(0, -4) != fileNames[j]) { // slice .txt suffix
+        fileNames.push(serverFileNames[i].slice(0, -4));
+      }
+    }
+  }
+
+  */
+  return fileNames;
+}
+
+function getFileNamesFromLibrary(fileContent) {
   let lines = fileContent.split("\r\n");
   let fileNames = [];
 
@@ -208,6 +237,29 @@ function getFileNames(fileContent) {
     fileNames.push(lines[i]);
   }
 
+  return fileNames;
+}
+
+function getFileNamesFromServer() {
+  let fileNames;
+  
+  /*
+  $.ajax({
+    method: "POST",
+    url: "add_tab.php",
+    data: { requestType: "scandir" }
+  })
+    .done(function( response ) {
+      fileNames = response;
+    });
+  */
+
+  if (fileNames === false) {
+    alert("Nelze se připojit k serveru.");
+    isError = true;
+    return null;
+  }
+  
   return fileNames;
 }
 
@@ -245,9 +297,9 @@ function setNames() {
     }
 
     if (exists) {
-      if (displaySuffix < 0) {
+      if (currentDisplayName.charAt(currentDisplayName.length - 2) == "#") {
+        displaySuffix = parseInt(currentDisplayName.charAt(currentDisplayName.length - 1)) + 1;
         currentDisplayName = currentDisplayName.slice(0, -1) + displaySuffix;
-        displaySuffix++;
       } else {
         currentDisplayName += " #2";
         displaySuffix = 2;

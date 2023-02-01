@@ -253,7 +253,7 @@ function readTabsFile(file) {
 
 // Read library.txt file
 function readLibraryFile() {
-  let fileContent = readFile("library.txt");
+  let fileContent = readFile("library.txt?date=" + Date.now()); // disable caching this file (by parameter date)
 
   if (fileContent) {
     return fileContent;
