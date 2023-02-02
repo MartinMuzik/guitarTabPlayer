@@ -220,7 +220,6 @@ area {
     color: #2e2e2e;
     font-weight: bold;
 }
-
 #output-textarea {
     resize: vertical;
     height: 400px;
@@ -231,7 +230,6 @@ area {
     color: #2e2e2e;
     font-weight: bold;
 }
-
 #generator-controls {
     display: flex;
     flex-direction: row;
@@ -243,6 +241,10 @@ area {
 .generator-controls-text {
     margin: 0 0 8px 0;
     font-weight: bolder;
+    font-size: 18px;
+}
+.tuning-info-text {
+    margin: 0;
 }
 .generator-btn {
     margin-top: 8px;

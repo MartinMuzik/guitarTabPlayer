@@ -91,31 +91,35 @@ function saveMetadata() {
     OUTPUT_TEXTAREA.innerHTML = output
     metadataExist = true;
   } else {
-    ERROR_MESSAGE.innerText = "Error: Tempo mimo rozsah.";
+    ERROR_MESSAGE.innerText = "Chyba: Tempo mimo rozsah.";
   }
 }
 
 // play note and update string selector
 function selectNote(note) {
   if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
-    ERROR_MESSAGE.innerText = "";
-    let length;
-
-    if (DOT_RADIO[0].checked) {
-      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    if (DOT_RADIO[1].checked && NOTE_LENGTH_SELECTOR.value == "01") {
+      ERROR_MESSAGE.innerText = "Chyba: Celá nota s tečkou neexistuje.";
     } else {
-      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
+      ERROR_MESSAGE.innerText = "";
+      let length;
+  
+      if (DOT_RADIO[0].checked) {
+        length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+      } else {
+        length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
+      }
+      
+      let audio = new Audio(`sounds/${note}.wav`);
+      audio.play();
+  
+      setTimeout(function(){
+        audio.pause();
+        audio.currentTime = 0;
+      }, length*1000);
     }
-    
-    let audio = new Audio(`sounds/${note}.wav`);
-    audio.play();
-
-    setTimeout(function(){
-      audio.pause();
-      audio.currentTime = 0;
-    }, length*1000);
   } else {
-    ERROR_MESSAGE.innerText = "Error: Tempo mimo rozsah.";
+    ERROR_MESSAGE.innerText = "Chyba: Tempo mimo rozsah.";
   }
 
   switch (note.substring(0, 1)) {
@@ -142,27 +146,31 @@ function selectNote(note) {
 
 function playHarmony() {
   if(TEMPO_INPUT.value >= 40 && TEMPO_INPUT.value <= 240) {
-    ERROR_MESSAGE.innerText = "";
-    let length;
-    
-    if (DOT_RADIO[0].checked) {
-      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+    if (DOT_RADIO[1].checked && NOTE_LENGTH_SELECTOR.value == "01") {
+      ERROR_MESSAGE.innerText = "Chyba: Celá nota s tečkou neexistuje.";
     } else {
-      length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
-    }
+      ERROR_MESSAGE.innerText = "";
+      let length;
+      
+      if (DOT_RADIO[0].checked) {
+        length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4));
+      } else {
+        length = ((60/TEMPO_INPUT.value)/(NOTE_LENGTH_SELECTOR.value/4)) * 1.5;
+      }
 
-    let audios = getAudioFiles();
-    audios.forEach(audio => {
-        audio.play();
-    });
-    setTimeout(function(){
-        audios.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
-        });
-    }, length*1000);
+      let audios = getAudioFiles();
+      audios.forEach(audio => {
+          audio.play();
+      });
+      setTimeout(function(){
+          audios.forEach(audio => {
+          audio.pause();
+          audio.currentTime = 0;
+          });
+      }, length*1000);
+    }
   } else {
-    ERROR_MESSAGE.innerText = "Error: Tempo mimo rozsah.";
+    ERROR_MESSAGE.innerText = "Chyba: Tempo mimo rozsah.";
   }
 }
 
@@ -220,7 +228,8 @@ function measureManagement() {
   } else if (DOT_RADIO[0].checked && 
     currentMeasureLength + (1 / NOTE_LENGTH_SELECTOR.value) <= 1) {
     return 1;
-  } else if (DOT_RADIO[1].checked && 
+  } else if (DOT_RADIO[1].checked &&
+             NOTE_LENGTH_SELECTOR.value != "01" && 
              currentMeasureLength + ((1 / NOTE_LENGTH_SELECTOR.value) * 1.5) <= 1) {
     return 1;
   } else {
@@ -273,7 +282,7 @@ function removeLastHarmony() {
   if (lines.length > 4) {
     output = "";
     if (lines[lines.length - 2].length > 7) { // if the row includes harmony
-      if (DOT_RADIO[0].checked) {
+      if (lines[lines.length - 2].charAt(0) == ":") {
         currentMeasureLength -= 1 / lines[lines.length - 2].substring(1,3);
       } else {
         currentMeasureLength -= (1 / lines[lines.length - 2].substring(1,3)) * 1.5;
