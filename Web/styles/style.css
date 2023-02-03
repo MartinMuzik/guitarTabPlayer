@@ -95,7 +95,7 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
-#footer {
+.footer {
     background-color: #2e2e2e;
 }
 #footer-text {
@@ -317,6 +317,46 @@ area {
 #check-tab-btn {
     margin-left: 8px;
 }
+#footer-add-tab {
+    margin-top: 61vh;
+}
+
+#library-table {
+    margin-left: 15px;
+    border-bottom: 2px solid #FF3434;
+}
+.library-tab {
+    border-bottom: 2px solid #FF3434;
+}
+.library-tabs:nth-child(odd) {
+    background-color: #ffecec;
+}
+td {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+#display-name-column {
+    width: 50vw;
+    text-align: left;
+}
+.library-btn {
+    background-color: #FF3434;
+    color: #FFFFFF;
+    border: 0;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+}
+.library-btn:hover {
+    background-color: #F71919;
+}
+.library-btn:active {
+    background-color: #cc1010;
+}
+.library-btn:disabled {
+    background-color: #FA93A7;
+}
 
 @media screen and (min-width: 1200px) {
     #admin-menu-items {
@@ -333,6 +373,9 @@ area {
         margin-left: 17.5%;
     }
     #add-tab-controls {
+        margin-left: 17.5%;
+    }
+    #library-table {
         margin-left: 17.5%;
     }
 }
