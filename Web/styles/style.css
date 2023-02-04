@@ -303,7 +303,7 @@ area {
     padding: 4px;
     color: #2e2e2e;
     font-weight: bold;
-    width: 300px;
+    width: 340px;
 }
 #upload-tab-btn {
     display: none;
@@ -327,9 +327,6 @@ area {
 }
 .library-tab {
     border-bottom: 2px solid #FF3434;
-}
-.library-tabs:nth-child(odd) {
-    background-color: #ffecec;
 }
 td {
     padding-top: 8px;
@@ -356,6 +353,9 @@ td {
 }
 .library-btn:disabled {
     background-color: #FA93A7;
+}
+.library-download-tab {
+    color: #FFFFFF;
 }
 
 @media screen and (min-width: 1200px) {
