@@ -5,9 +5,9 @@ Main features will be:
  - Tab player
  - Library with tabs
  - Admin
-   - Login
-   - Tab creator
-   - Library management
+   - Login - finished
+   - Tab creator - finished
+   - Library management - finished
 
 Other features (which may be developed after the main features are done):
  - Tab sheet image generator
@@ -19,4 +19,4 @@ Other features (which may be developed after the main features are done):
  - Online tuner (input from microphone)
  - Realtime "played notes checker" - checks if the notes are played correctly (input from microphone) like in Rocksmith 
 
-Deadline for main features to be fully developed: 14.2.2023
+Deadline: 14.4.2023
