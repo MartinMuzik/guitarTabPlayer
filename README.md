@@ -2,8 +2,8 @@
 Web application like songsterr.com written in JavaScript which will be used to create and play guitar tabs (from own formated text file).
 Main features will be:
 
- - Tab player
- - Library with tabs
+ - Tab player - finished
+ - Library with tabs - finished
  - Admin
    - Login - finished
    - Tab creator - finished
