@@ -2,7 +2,9 @@ const LIBRARY_TABLE = document.getElementById("library-table");
 
 let libraryContent;
 
-loadLibrary();
+if(authentication() == 1) {
+  loadLibrary();
+}
 
 function loadLibrary() {
   libraryContent = readFile("library.txt?date=" + Date.now()); // disable caching this file (by parameter date)
@@ -148,4 +150,14 @@ function removeTab(tabFileName, tabName) {
             tabName: tabName
           }
   })
+}
+
+function authentication() {
+  if (readFile("authentication.php") == 1) {
+    return 1;
+  } else {
+    confirm("Nejste přihlášen.");
+    window.location.href = "login.html";
+  }
+  return 0;
 }

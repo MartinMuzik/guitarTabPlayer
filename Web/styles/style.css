@@ -176,6 +176,7 @@ body {
     padding: 0;
     overflow: hidden;
     background-color: #FF3434;
+    box-shadow: 1px 2px 3px #b9b9b9;
 }
 .admin-menu-li {
     float: left;
@@ -229,6 +230,8 @@ area {
     border-width: 2px;
     color: #2e2e2e;
     font-weight: bold;
+    margin-bottom: 25px;
+    font-size: 14px;
 }
 #generator-controls {
     display: flex;
@@ -317,9 +320,11 @@ area {
 #check-tab-btn {
     margin-left: 8px;
 }
+/*
 #footer-add-tab {
     margin-top: 61vh;
 }
+*/
 
 #library-table {
     margin-left: 15px;
@@ -356,6 +361,51 @@ td {
 }
 .library-download-tab {
     color: #FFFFFF;
+}
+#main-content-login {
+    margin-top: 15vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#login-panel {
+    background-color: #ffdede;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    padding: 10px 30px 30px 30px;
+    border-radius: 20px;
+    color: #753B3B;
+    box-shadow: 1px 2px 3px #b9b9b9;
+}
+#login-header {
+    margin-bottom: 5px;
+}
+.login-input {
+    border: none;
+    border-radius: 5px;
+    font-size: 15px;
+    padding: 5px 7px;
+    margin-top: 4px;
+    box-shadow: 1px 2px 3px #b9b9b9;
+}
+#login-submit {
+    margin-top: 10px;
+    margin-left: 43px;
+    font-size: 15px;
+    font-weight: bolder;
+    background-color: #FF3434;
+    color: #FFFFFF;
+    border: 0;
+    padding: 8px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+}
+#login-submit:hover {
+    background-color: #F71919;
+}
+#login-submit:active {
+    background-color: #cc1010;
 }
 
 @media screen and (min-width: 1200px) {

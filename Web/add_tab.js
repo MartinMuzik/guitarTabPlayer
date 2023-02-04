@@ -13,9 +13,10 @@ let usedDisplayNames = [];
 let usedFileNames = [];
 let isError = false;
 
+authentication();
+
 ADD_BTN.setAttribute("disabled", "disabled");
 CHECK_BTN.setAttribute("disabled", "disabled");
-
 
 UPLOAD_TAB_ELEMENT.addEventListener("change", handleFile, false);
 function handleFile() {
@@ -301,6 +302,14 @@ function setNames() {
       isSet = true;
     }
   }
+}
 
-
+function authentication() {
+  if (readFile("authentication.php") == 1) {
+    return 1;
+  } else {
+    confirm("Nejste přihlášen.");
+    window.location.href = "login.html";
+  }
+  return 0;
 }

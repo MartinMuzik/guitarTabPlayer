@@ -26,6 +26,8 @@ let currentMeasureLength = 0;
 // element 6 is note length, elements 7,8 are dot_radio flags
 let previousHarmony = ["X", "X", "X", "X", "X", "X", "01", "0"];
 
+authentication();
+
 SAVE_METADATA_BUTTON.addEventListener("click", function() {
   saveMetadata();
 });
@@ -364,4 +366,32 @@ function addToLibrary() {
   let realOutput = prepareForExport();
 
   console.log(realOutput);
+}
+
+// Read text file with XHR
+function readFile(file) {
+  let fileContent;
+  let rawFile = new XMLHttpRequest();
+
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = function () {
+    if(rawFile.readyState === 4) {
+      if(rawFile.status === 200 || rawFile.status == 0) {
+        fileContent = rawFile.responseText;
+      }
+    }
+  }
+
+  rawFile.send(null);
+  return fileContent;
+}
+
+function authentication() {
+  if (readFile("authentication.php") == 1) {
+    return 1;
+  } else {
+    confirm("Nejste přihlášen.");
+    window.location.href = "login.html";
+  }
+  return 0;
 }

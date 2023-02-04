@@ -45,6 +45,7 @@ let isTempoChanged = false;
 
 
 //Page loading starts here
+logout(); //remove session cookie (tab selector would not work with that cookie set)
 PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
@@ -468,4 +469,8 @@ function getFileNames(fileContent) {
   }
 
   return fileNames;
+}
+
+function logout() {
+  readFile("logout.php");
 }
