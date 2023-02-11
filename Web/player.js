@@ -1,4 +1,6 @@
 const URL = window.location.href;
+const SONG_LIST_CONTENT = document.getElementById("song-list-content");
+const SONG_LIST_BTN = document.getElementById("song-list-btn");
 const LOAD_BUTTON_ELEMENT = document.getElementById("load-btn");
 const PLAY_BUTTON_ELEMENT = document.getElementById("play-btn");
 const SONG_NAME_TEXT_ELEMENT = document.getElementById("song-name-text");
@@ -6,7 +8,6 @@ const ARTIST_TEXT_ELEMENT = document.getElementById("artist-text");
 const ERROR_TEXT_ELEMENT = document.getElementById("error-text");
 const TEMPO_SLIDER_ELEMENT = document.getElementById("tempo-slider");
 const TEMPO_TEXT_ELEMENT = document.getElementById("tempo-text");
-const SONG_SELECTOR_ELEMENT = document.getElementById("song-selector");
 const START_INPUT_ELEMENT = document.getElementById("start-input");
 const NOTE_REG_EXP = new RegExp(/^([1-6]_(([01][0-9])|20))|XXXX$/);
 const NOTE_LENGTH_REG_EXP = new RegExp(/^(:|.)((0[1248])|16|32)$/);
@@ -50,14 +51,17 @@ PLAY_BUTTON_ELEMENT.setAttribute("disabled", "disabled");
 TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
 START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
 loadLibrary();
-tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
 getCookie();
 
 // AudioContext would not work without some interaction with a user
 LOAD_BUTTON_ELEMENT.addEventListener("click", function() {
-  audioContext = new AudioContext;
-  LOAD_BUTTON_ELEMENT.remove();
-  loadSong();
+  if (document.cookie != "") {
+    audioContext = new AudioContext;
+    LOAD_BUTTON_ELEMENT.remove();
+    loadSong();
+  } else {
+    ERROR_TEXT_ELEMENT.textContent = "Nejprve musíte vybrat skladbu.";
+  }
 });
 
 PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
@@ -67,7 +71,6 @@ PLAY_BUTTON_ELEMENT.addEventListener("click", function() {
   } else {
     if (START_INPUT_ELEMENT.value <= parsedTab.length) {
       ERROR_TEXT_ELEMENT.textContent = "";
-      // StartValue();
       playSong();
     } else {
       ERROR_TEXT_ELEMENT.textContent = "Zvolený začáteční takt přesahuje délku skladby.";
@@ -81,20 +84,10 @@ TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
   isTempoChanged = true;
 });
 
-
-SONG_SELECTOR_ELEMENT.addEventListener("input", function() {
-  setCookie();
-  // refresh page (to clear cache)
-  document.location.reload();
-});
-
-
 // Load song - call this method first to start
 function loadSong() {
-  tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
-
   try {
-    parseTabs(tabSource);
+    parseTabs();
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }
@@ -118,7 +111,7 @@ function loadSong() {
 
 // Parameter file: url of the text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
-function parseTabs(file) {
+function parseTabs() {
   parsedTab = [] // clear from previous loaded tab
   let tabs = readTabsFile(tabSource).split("\r\n");
   let currentMeasure = [];
@@ -323,7 +316,6 @@ async function playSong () {
   PLAY_BUTTON_ELEMENT.style.fontSize = "30px";
   TEMPO_SLIDER_ELEMENT.setAttribute("disabled", "disabled");
   START_INPUT_ELEMENT.setAttribute("disabled", "disabled");
-  SONG_SELECTOR_ELEMENT.setAttribute("disabled", "disabled");
  
   if (isParsed) {
     // Change note duration according to the new tempo
@@ -359,7 +351,6 @@ async function playSong () {
   PLAY_BUTTON_ELEMENT.style.fontSize = "20px";
   TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
   START_INPUT_ELEMENT.removeAttribute("disabled");
-  SONG_SELECTOR_ELEMENT.removeAttribute("disabled");
 }
 
 // Fetch audio file, decode it and stick it in a audioBuffer.
@@ -416,22 +407,46 @@ function changeTempo() {
 // Use to switch between songs and don't fill cache with audio sources
 function getCookie() {
   if (document.cookie != "") {
-    SONG_SELECTOR_ELEMENT.value = document.cookie.substring(17);
-    tabSource = `tabs/${SONG_SELECTOR_ELEMENT.value}.txt`;
+    SONG_LIST_BTN.innerHTML = getDisplayName(document.cookie.substring(17));
+    tabSource = `tabs/${document.cookie.substring(17)}.txt`;
+    ERROR_TEXT_ELEMENT.textContent = "Klikněte na tlačítko Načíst.";
   }
 }
 
 // set cookie "currentTabSource" value to newly selected song
-function setCookie() {
-  document.cookie = "currentTabSource=" + SONG_SELECTOR_ELEMENT.value;
+function setCookie(newTabSource) {
+  document.cookie = "currentTabSource=" + newTabSource;
 }
 
-// Load library content to song-selector element
+function getDisplayName(fileName) {
+  try {
+    let fileContent = readLibraryFile();
+    let displayNames = getDisplayNames(fileContent);
+    let fileNames = getFileNames(fileContent);
+    let foundIndex = -1;
+
+    for (let i = 0; i < displayNames.length; i++) {
+      if (fileNames[i] == fileName) {
+        foundIndex = i;
+      }
+    }
+
+    if (foundIndex >= 0) {
+      return displayNames[foundIndex];
+    } else {
+      throw "Tab nenalezen";
+    }
+  } catch(e) {
+    ERROR_TEXT_ELEMENT.textContent = e;
+  }
+}
+
+// Load library content to song list
 function loadLibrary() {
   try {
     let fileContent = readLibraryFile();
     let libraryHTML = prepareLibrary(fileContent);
-    SONG_SELECTOR_ELEMENT.innerHTML = libraryHTML;
+    SONG_LIST_CONTENT.innerHTML = libraryHTML;
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }
@@ -443,10 +458,15 @@ function prepareLibrary(fileContent) {
   let fileNames = getFileNames(fileContent);
 
   for (let i = 0; i < displayNames.length; i++) {
-    result += `<option value="${fileNames[i]}">${displayNames[i]}</option>`;
+    result += `<a onclick="selectTab('${fileNames[i]}')">${displayNames[i]}</a>`;
   }
   
   return result;
+}
+
+function selectTab(newTabSource) {
+  setCookie(newTabSource);
+  document.location.reload();
 }
 
 function getDisplayNames(fileContent) {

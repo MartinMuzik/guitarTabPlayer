@@ -12,8 +12,21 @@
   <div id="main-content">
     <div id="player-head">
       <div id="song-list">
-        <select name="song-selector" id="song-selector">
-        </select> <br>
+        <div id="dropdown">
+          <button id="song-list-btn">Vyberte skladbu</button>
+          <div id="song-list-content">
+          </div>
+        </div>
+      </div>
+      <button id="hint-btn">Nápověda</button>
+      <div id="hint-modal" class="modal">
+        <div class="hint-content">
+          <span class="close-hint">&times;</span>
+          <p>Nejprve v horním menu vyberte požadovanou skladbu a poté klikněte na tlačítko <strong>Načíst</strong>.</p>
+          <p>Po načtení se nastaví původní tempo (rychlost) skladby. Můžete jej změnit pomocí posuvníku. Tempo je udáváno v BPM - <i>beats per minute</i>. Můžete zvolit tempo v rozsahu 40 až 240 BPM.</p>
+          <p>Dále můžete zvolit od kolikátého taktu chcete začít přehrávání. Pro přehrání od začátku ponechte jedničku.</p>
+          <p>Přehrávání spustíte kliknutí na tlačítko se symbolem šipky. Zastavit ho můžete stejným tlačítkem, nyní se symbolem čtverečku. Přehrávání se zastaví po doznění aktuální noty.</p>
+        </div>
       </div>
       <h3 id="song-name-text"></h3>
       <h4 id="artist-text"></h4>
@@ -31,7 +44,7 @@
         <label for="start-control">Přehrát od:</label>
         <input type="number" id="start-input" name="start-control" value="1" min="1" step="1">
       </div>
-      <h3 id="error-text">Klikněte na tlačítko Načíst.</h3>
+      <h3 id="error-text">Vyberte skladbu a klikněte na tlačítko Načíst.</h3>
     </div>
     <img id="tabsheet-img" src="img/tabsheets/beethoven-fur_elise.jpg" alt="tabsheet">
   </div>
@@ -42,5 +55,6 @@
     </div>
   </div>
   <script src="player.js"></script>
+  <script src="hint.js"></script>
 </body>
 </html>

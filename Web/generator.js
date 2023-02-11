@@ -9,7 +9,6 @@ const LOAD_HARMONY_BUTTON = document.getElementById("load-harmony-btn");
 const APPEND_HARMONY_BUTTON = document.getElementById("append-harmony-btn");
 const REMOVE_LAST_BUTTON = document.getElementById("remove-last-btn");
 const DOWNLOAD_BUTTON = document.getElementById("download-btn");
-const ADD_TO_LIBRARY_BUTTON = document.getElementById("add-to-library-btn");
 const STRING_ONE_SELECTOR = document.getElementById("string-one-selector");
 const STRING_TWO_SELECTOR = document.getElementById("string-two-selector");
 const STRING_THREE_SELECTOR = document.getElementById("string-three-selector");
@@ -48,9 +47,6 @@ REMOVE_LAST_BUTTON.addEventListener("click", function() {
 });
 DOWNLOAD_BUTTON.addEventListener("click", function() {
   downloadTab();
-});
-ADD_TO_LIBRARY_BUTTON.addEventListener("click", function() {
-  addToLibrary();
 });
 
 // replace first three rows in output data and textarea
@@ -359,13 +355,6 @@ function downloadTab() {
   element.click();
 
   document.body.removeChild(element);
-}
-
-// TODO: finish this
-function addToLibrary() {
-  let realOutput = prepareForExport();
-
-  console.log(realOutput);
 }
 
 // Read text file with XHR
