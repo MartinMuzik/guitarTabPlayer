@@ -75,7 +75,7 @@ body {
     color: #FF3434;
     font-size: 40px;
     font-weight: normal;
-    margin-top: 30px;
+    margin-top: 40px;
     padding-bottom: 0px;
     margin-bottom: 0px;
 }
@@ -129,21 +129,98 @@ body {
     margin: 0px auto;
     justify-content: center;
     align-items: flex-start;
-    padding-left: 10px;
     font-size: 18px;
-}
-#song-selector {
-    width: 98.5%;
-    margin-top: 10px;
-    font-size: 18px;
-    border-radius: 18px;
-    border-color: #FF3434;
-    border-width: 2px;
-    padding: 5px 5px;
-    color: #2e2e2e;
-    font-weight: bold;
 }
 
+/* SONG LIST DROPDOWN */
+#song-list-btn {
+    background-color: #FF3434;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: bolder;
+    border: none;
+    width: 100%;
+    text-align: left;
+    box-shadow: 1px 2px 3px #b9b9b9;
+}
+#dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+#song-list-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    cursor: pointer;
+}
+#song-list-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+#song-list-content a:hover {
+    background-color: #ddd;
+}
+#dropdown:hover #song-list-content {
+    display: block;
+}
+#dropdown:hover #song-list-btn {
+    background-color: #F71919;
+}
+
+#hint-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    border-bottom: 1px dotted black;
+    font-size: 16px;
+    font-family: inherit;
+    margin: 10px 15px 0px 0px;
+    float: right;
+    cursor: help;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+.hint-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+    text-align: left;
+}
+.close-hint {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close-hint:hover,
+.close-hint:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/*
 @media screen and (min-width: 1200px) {
     #tabsheet-img {
         width: 65%;
@@ -164,7 +241,7 @@ body {
         margin: 0 18.25%;
     }
 }
-
+*/
 
 /*
   ADMIN STYLES START HERE
