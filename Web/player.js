@@ -25,7 +25,7 @@ let originalTempo;
 let currentTempo;
 
 // Array containing parsed tab data
-// Format: [measure][note/harmony][note duration, note,..., note length]
+// Format: [measure][note/harmony][note duration, note,..., include dot, note length]
 let parsedTab = [];
 // Array containing names of all notes used
 // in current song (without repetition) 
@@ -88,6 +88,7 @@ TEMPO_SLIDER_ELEMENT.addEventListener("input", function() {
 function loadSong() {
   try {
     parseTabs();
+    renderTabs(parsedTab);
   } catch(e) {
     ERROR_TEXT_ELEMENT.textContent = e;
   }

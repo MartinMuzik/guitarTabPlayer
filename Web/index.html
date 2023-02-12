@@ -46,7 +46,72 @@
       </div>
       <h3 id="error-text">Vyberte skladbu a klikněte na tlačítko Načíst.</h3>
     </div>
+    <!--
     <img id="tabsheet-img" src="img/tabsheets/beethoven-fur_elise.jpg" alt="tabsheet">
+    -->
+    <div id="tabsheet">
+      <svg id="tabsheet-canvas">
+        <!--
+        <text x="1" y="23">e</text>
+        <text x="0.5" y="45">B</text>
+        <text x="0" y="65">G</text>
+        <text x="0.5" y="85">D</text>
+        <text x="0.2" y="105">A</text>
+        <text x="1.5" y="125">E</text>
+        <text x="50" y="65" style="font-size:60px;font-weight:500">4</text>
+        <text x="50" y="112" style="font-size:60px;font-weight:500">4</text>
+
+        <text x="470.5" y="13" fill="#FF3434">1</text>
+        <polyline points="17,18 1870,18 1870,118 17,118 17,18 17,38 1870,38 1870,58 17,58 17,78 1870,78 1870,98 17,98" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="467.5" y1="18" x2="467.5" y2="118" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+
+        <text x="3" y="213" fill="#FF3434">2</text>
+        <text x="938" y="213" fill="#FF3434">3</text>
+        <polyline points="1,218 1870,218 1870,318 1,318 1,218 1,238 1870,238 1870,258 1,258, 1,278 1870,278 1870,298 1,298" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="935" y1="218" x2="935" y2="318" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+
+        <text x="3" y="413" fill="#FF3434">4</text>
+        <text x="626" y="413" fill="#FF3434">5</text>
+        <text x="1250" y="413" fill="#FF3434">6</text>
+        <polyline points="1,418 1870,418 1870,518 1,518 1,418 1,438 1870,438 1870,458 1,458, 1,478 1870,478 1870,498 1,498" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="623" y1="418" x2="623" y2="518" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="1247" y1="418" x2="1247" y2="518" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+
+        <text x="4" y="613" fill="#FF3434">7</text>
+        <text x="470.5" y="613" fill="#FF3434">8</text>
+        <text x="938" y="613" fill="#FF3434">9</text>
+        <text x="1405.5" y="613" fill="#FF3434">10</text>
+        <polyline points="1,618 1870,618 1870,718 1,718 1,618 1,638 1870,638 1870,658 1,658, 1,678 1870,678 1870,698 1,698" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="467.5" y1="618" x2="467.5" y2="718" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="935" y1="618" x2="935" y2="718" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="1402.5" y1="618" x2="1402.5" y2="718" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <text x="40" y="725">0</text>
+        <text x="80" y="725">20</text>
+        <text x="130" y="725">20</text>
+        
+        <text x="3" y="813" fill="#FF3434">11</text>
+        <text x="470.5" y="813" fill="#FF3434">12</text>
+        <text x="938" y="813" fill="#FF3434">13</text>
+        <polyline points="1,818 1870,818 1870,918 1,918 1,818 1,838 1870,838 1870,858 1,858, 1,878 1870,878 1870,898 1,898" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="467.5" y1="818" x2="467.5" y2="918" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="935" y1="818" x2="935" y2="918" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+
+        <text x="3" y="1013" fill="#FF3434">14</text>
+        <text x="470.5" y="1013" fill="#FF3434">15</text>
+        <text x="1405.5" y="1013" fill="#FF3434">16</text>
+        <polyline points="1,1018 1870,1018 1870,1118 1,1118 1,1018 1,1038 1870,1038 1870,1058 1,1058, 1,1078 1870,1078 1870,1098 1,1098" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="467.5" y1="1018" x2="467.5" y2="1118" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="1402.5" y1="1018" x2="1402.5" y2="1118" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+
+        <text x="3" y="1213" fill="#FF3434">17</text>
+        <text x="938" y="1213" fill="#FF3434">18</text>
+        <text x="1405.5" y="1213" fill="#FF3434">19</text>
+        <polyline points="1,1218 1870,1218 1870,1318 1,1318 1,1218 1,1238 1870,1238 1870,1258 1,1258, 1,1278 1870,1278 1870,1298 1,1298" style="fill:none;stroke:black;stroke-width:1"/>
+        <line x1="935" y1="1218" x2="935" y2="1318" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        <line x1="1402.5" y1="1218" x2="1402.5" y2="1318" style="stroke:rgb(0, 0, 0);stroke-width:1"/>
+        -->
+      </svg>
+    </div>
   </div>
   <div class="footer">
     <div id="player-footer">
@@ -56,5 +121,6 @@
   </div>
   <script src="player.js"></script>
   <script src="hint.js"></script>
+  <script src="render.js"></script>
 </body>
 </html>
