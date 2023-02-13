@@ -1,5 +1,5 @@
 const TABSHEET_CANVAS = document.getElementById("tabsheet-canvas");
-// TODO: nastavit height, prvni radek special - prvni takt az po jedne ctvrtine (nejdriv ladeni, takt 4/4)
+// TODO: responzivni na zaklade tabsheetWidth
 
 let tabsheetWidth = 1870;
 let rowSpacing = 200;
@@ -12,11 +12,10 @@ function renderTabs(parsedTab) {
   let minimumMeasureWidths = generateMinimumMeasureWidths(parsedTab);
   let optimizedMeasureWidths = generateOptimizedMeasureWidths(minimumMeasureWidths);
 
-  renderRows(optimizedMeasureWidths);
-
-  console.log(parsedTab);
-  console.log(minimumMeasureWidths);
   console.log(optimizedMeasureWidths);
+
+  renderRows(optimizedMeasureWidths);
+  renderFretNumbers(optimizedMeasureWidths, parsedTab);
 }
 
 // generate minimum required width (fraction of tabsheetWidth) for each measure
@@ -88,18 +87,15 @@ function generateOptimizedMeasureWidths(minimumMeasureWidths) {
     });
 
     if (currentRowSum + minimumMeasureWidths[i] < 1) {
-      console.log("Measure: " + i + " <");
       currentRow.push(minimumMeasureWidths[i]);
     } else if (currentRowSum + minimumMeasureWidths[i] == 1) {
       currentRow.push(minimumMeasureWidths[i]);
-      console.log("Measure: " + i + " ==");
       if (finalWidths.length == 0) {
         currentRow.shift() // first "metadata" measure will be generated separately
       }
       finalWidths.push(currentRow);
       currentRow = [];
     } else {   // finish row with previous measure, start new row
-      console.log("Measure: " + i + " >");
       let lastMeasure = currentRow.pop();
       currentRow.push(1 - currentRowSum + lastMeasure);
 
@@ -119,6 +115,7 @@ function generateOptimizedMeasureWidths(minimumMeasureWidths) {
   return finalWidths;
 }
 
+// render tuning and beat info, string lines, measure separators and measure numbers
 function renderRows(measureWidths) {
   let rowsAmount = measureWidths.length;
   // set canvas height if larger than fullscreen page (due to footer)
@@ -178,4 +175,123 @@ function renderRows(measureWidths) {
   }
 
   TABSHEET_CANVAS.innerHTML = htmlResult;
+}
+
+// render fret numbers
+function renderFretNumbers(optimizedMeasureWidths, parsedTab) {
+  let lastX;
+  let measureNumber = 0;
+  let htmlResult = "";
+  
+
+  for (let i = 0; i < optimizedMeasureWidths.length; i++) {
+    lastX = 0;
+
+    for (let j = 0; j < optimizedMeasureWidths[i].length; j++) {
+      if (i == 0 && j == 0) { // skip tuning info part 
+        lastX = 467.5;
+      }
+
+      measureNumber++;
+      let fretNumbers = getFretNumbers(measureNumber, parsedTab);
+      let fretSpacing = ((optimizedMeasureWidths[i][j] * tabsheetWidth - borderNoteSpacing) / fretNumbers.length);
+      let currentMeasureHtml = generateMeasureFrets(fretNumbers, fretSpacing, i, lastX);
+      
+      lastX += optimizedMeasureWidths[i][j] * tabsheetWidth
+      htmlResult += currentMeasureHtml;
+    }
+  }
+
+  TABSHEET_CANVAS.innerHTML += htmlResult;
+
+}
+
+// // return average spacing between notes in measure
+// function countFretSpacing(measureWidth, fretNumbers) {
+//   // sum all digits in fret numbers in current measure, only 1 or 2 per harmony
+//   let measureTotalFretDigits = 0;
+//   // let lastHasTwoDigits = false; TODO: asi odstranit
+
+//   for (let i = 0; i < fretNumbers.length; i++) {
+//     let harmonyContainsTwoChars = false;
+//     for (let j = 0; j < fretNumbers[i].length; j++) {
+//       if (fretNumbers[i][j].charAt(2) != "0") {
+//         harmonyContainsTwoChars = true;
+//       }
+//     }
+//     if(harmonyContainsTwoChars) {
+//       measureTotalFretDigits += 2;
+//     } else {
+//       measureTotalFretDigits++;
+//     }
+
+//     /*  TODO: asi odstranit
+//     if (i == (fretNumbers.length - 1) && harmonyContainsTwoChars) {
+//       lastHasTwoDigits = true;
+//     }
+//     */
+//   }
+
+//   //let result = ((measureWidth - borderNoteSpacing) / ((fretNumbers.length + measureTotalFretDigits) / 2));
+//   let result = ((measureWidth - borderNoteSpacing) / fretNumbers.length);
+
+//   /* TODO: asi odstranit
+//   if (!lastHasTwoDigits) {
+//     result = ((measureWidth - 2 * borderNoteSpacing) / fretNumbers.length);
+//   } else {
+//     result = ((measureWidth - borderNoteSpacing - doubleCharNoteSpacing) / fretNumbers.length);
+//   }
+
+//   */
+
+//   return result;
+
+// }
+
+//return fret numbers in current measure, including string number
+function getFretNumbers(measureNumber, tab) {
+  let measureContent = tab[measureNumber - 1];
+  let result = [];
+
+  for (let i = 0; i < measureContent.length; i++) {
+    let currentHarmony = [];
+
+    // fret numbers are only elements on positions 1 - measureContent[i] - 2
+    for (let j = 1; j < measureContent[i].length - 2; j++) {
+      currentHarmony.push(measureContent[i][j]);
+    }
+    result.push(currentHarmony);
+  }
+
+  return result;
+}
+
+// return measure fret numbers as html svg
+function generateMeasureFrets(fretNumbers, fretSpacing, row, lastX) {
+    let htmlResult = "";
+    let currentX = lastX + borderNoteSpacing;
+
+    fretNumbers.forEach(harmony => {
+      for (let i = 0; i < harmony.length; i++) {
+        if (harmony[i] == "XXXX") {
+          // TODO finish
+          htmlResult += `
+            <rect x="${currentX - 3}" y="${58 + 200 * row}" width="20" height="8" style="fill:black;"/>
+          `;
+        } else if (harmony[i].charAt(2) != "0") {
+          htmlResult += `
+            <rect x="${currentX - 3}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="26" height="10" style="fill:white;"/>
+            <text x="${currentX}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[i].charAt(2) + harmony[i].charAt(3)}</text>
+          `;
+        } else {
+          htmlResult += `
+          <rect x="${currentX - 3}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="18" height="10" style="fill:white;"/>
+          <text x="${currentX}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[i].charAt(3)}</text>
+        `;
+        }
+      }
+      currentX += fretSpacing;
+    });
+
+    return htmlResult;
 }
