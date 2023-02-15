@@ -11,14 +11,15 @@ const minSpacing = 32;
 
 // list of position of each note
 // format: [measure[row, x1,..xn]]
-let notePositions = []; 
+let notePositions = [];
+let playerPointerElement;
 
 function renderTabs(parsedTab) {
   let minimumMeasureWidths = generateMinimumMeasureWidths(parsedTab);
   let optimizedMeasureWidths = generateOptimizedMeasureWidths(minimumMeasureWidths);
-
   renderRows(optimizedMeasureWidths);
   renderFretNumbers(optimizedMeasureWidths, parsedTab);
+  renderPointer();
 }
 
 // generate minimum required width (fraction of tabsheetWidth) for each measure
@@ -210,8 +211,10 @@ function renderFretNumbers(optimizedMeasureWidths, parsedTab) {
 
 }
 
-//return fret numbers in current measure, including string number, 
-// last element of each harmony is note length (fraction)
+//return fret numbers in current measure, including string number
+// element at [harmony][-3] is note length
+// element at [harmony][-2] is boolean isDot
+// element at [harmony][-1] is note length (fraction)
 function getFretNumbers(measureNumber, tab) {
   let measureContent = tab[measureNumber - 1];
   let result = [];
@@ -224,6 +227,10 @@ function getFretNumbers(measureNumber, tab) {
       currentHarmony.push(measureContent[i][j]);
     }
 
+    // get note length
+    currentHarmony.push(measureContent[i][measureContent[i].length - 1]);
+    // get isDot
+    currentHarmony.push(measureContent[i][measureContent[i].length - 2]);
     // get note length fraction
     if (measureContent[i][measureContent[i].length - 2] == false) {  // if include dot
       currentHarmony.push( 1 / measureContent[i][measureContent[i].length - 1]);
@@ -241,14 +248,18 @@ function getFretNumbers(measureNumber, tab) {
 // return array of note X positions and push it also to global notePositions array including row
 function generateMeasureNoteSpacing(fretNumbers, measureWidth, row, startPosition) {
   let currentMeasureSpacing = [];
-  let currentMeasurePositions = [];
+  let currentMeasurePositions = []; // to be pushed to notePositions array
   let position = startPosition + borderNoteSpacing;
   let realMeasureWidth = measureWidth - 2 * borderNoteSpacing;
   let currentDifference = 0;
 
   currentMeasureSpacing.push(position);  // first note in measure position
 
+  currentMeasurePositions.push(row);
+  currentMeasurePositions.push([position, checkHarmonyDigits(fretNumbers[0])]);
+
   for (let i = 1; i < fretNumbers.length; i++) {
+
     currentDifference = (position + realMeasureWidth * fretNumbers[i - 1][fretNumbers[i - 1].length - 1]) - position;
     
     if (currentDifference >= minSpacing) {
@@ -256,21 +267,17 @@ function generateMeasureNoteSpacing(fretNumbers, measureWidth, row, startPositio
     } else {
       position += minSpacing;
     }
-
     currentMeasureSpacing.push(position);
+    currentMeasurePositions.push([position, checkHarmonyDigits(fretNumbers[i])]);
   }
 
   // push current row, positions to global notePositions array
-  currentMeasurePositions.push(row);
-  currentMeasureSpacing.forEach(notePosition => {
-    currentMeasurePositions.push(notePosition);
-  });
   notePositions.push(currentMeasurePositions);
 
   return currentMeasureSpacing;
 }
 
-// return measure fret numbers as html svg
+// return measure fret numbers and note signs as html svg
 function generateMeasureFrets(fretNumbers, noteSpacing, row) {
     let htmlResult = "";
     let currentX, harmony;
@@ -279,14 +286,17 @@ function generateMeasureFrets(fretNumbers, noteSpacing, row) {
     for (let i = 0; i < fretNumbers.length; i++) {
       currentX = noteSpacing[i];
       harmony = fretNumbers[i];
+      let twoDigitHarmony = false;
 
-      for (let j = 0; j < harmony.length - 1; j++) {
+      for (let j = 0; j < harmony.length - 3; j++) {
         if (harmony[j] == "XXXX") {
           // TODO finish
+          twoDigitHarmony = true;
           htmlResult += `
             <rect x="${currentX - 3}" y="${58 + 200 * row}" width="20" height="8" style="fill:black;"/>
           `;
         } else if (harmony[j].charAt(2) != "0") {
+          twoDigitHarmony = true;
           htmlResult += `
             <rect x="${currentX - 3}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="26" height="10" style="fill:white;"/>
             <text x="${currentX}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[j].charAt(2) + harmony[j].charAt(3)}</text>
@@ -298,7 +308,119 @@ function generateMeasureFrets(fretNumbers, noteSpacing, row) {
         `;
         }
       }
+
+      let digitIncrement = 6;
+      if (twoDigitHarmony) {
+        digitIncrement = 12;
+      }
+
+      // add dot if needed
+      let dotNeeded = false;
+      if (harmony[harmony.length - 2] == true) {
+        dotNeeded = true;
+        htmlResult += `<circle cx="${currentX + digitIncrement + 8}" cy="${200 * row + 168}" r="2" style="fill:black;stroke-width:0"/>`;
+      }
+
+      // TODO odstranit redundanci
+
+      // whole note has no sign, half note has half line sign, quarter note has full line sign
+      // eighth note has 1 rect, sexteenth note has 2 rects, thirty-second has 3 rects
+      // if is next note same -> connect signs
+      if (harmony[harmony.length - 3] == 2) {
+        htmlResult += `<line x1="${currentX + digitIncrement}" y1="${200 * row + 155}" x2="${currentX + digitIncrement}" y2="${200 * row + 170}" style="stroke:black;stroke-width:1"/>`;
+      } else if (harmony[harmony.length - 3] == 4) {
+        htmlResult += `<line x1="${currentX + digitIncrement}" y1="${200 * row + 140}" x2="${currentX + digitIncrement}" y2="${200 * row + 170}" style="stroke:black;stroke-width:1"/>`;
+      } else if (harmony[harmony.length - 3] == 8) {
+        htmlResult += `<line x1="${currentX + digitIncrement}" y1="${200 * row + 140}" x2="${currentX + digitIncrement}" y2="${200 * row + 170}" style="stroke:black;stroke-width:1"/>`;
+        if (i < fretNumbers.length - 1 && fretNumbers[i + 1][fretNumbers[i + 1].length - 3] == 8 && !dotNeeded) { // right neighbour same
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 166}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 8 && !dotNeeded) { // left neighbour also same
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+          }
+        } else {
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 8 && !dotNeeded) { // same only left neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+          } else { // no same neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+          }
+        }
+      } else if (harmony[harmony.length - 3] == 16) {
+        htmlResult += `<line x1="${currentX + digitIncrement}" y1="${200 * row + 140}" x2="${currentX + digitIncrement}" y2="${200 * row + 170}" style="stroke:black;stroke-width:1"/>`;
+        if (i < fretNumbers.length - 1 && fretNumbers[i + 1][fretNumbers[i + 1].length - 3] == 16 && !dotNeeded) { // right neighbour same
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 166}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 160}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 16 && !dotNeeded) { // left neighbour also same
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+          }
+        } else {
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 16 && !dotNeeded) { // same only left neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+          } else { // no same neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+          }
+        }
+      } else if (harmony[harmony.length - 3] == 32) {
+        htmlResult += `<line x1="${currentX + digitIncrement}" y1="${200 * row + 140}" x2="${currentX + digitIncrement}" y2="${200 * row + 170}" style="stroke:black;stroke-width:1"/>`;
+        if (i < fretNumbers.length - 1 && fretNumbers[i + 1][fretNumbers[i + 1].length - 3] == 32 && !dotNeeded) { // right neighbour same
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 166}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 160}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          htmlResult += `<rect x="${currentX + digitIncrement}" y="${200 * row + 154}" width="${noteSpacing[i + 1] + - (currentX + digitIncrement) + 2}" height="4" style="fill:black;"/>`;
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 32 && !dotNeeded) { // left neighbour also same
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 154}" width="10" height="4" style="fill:black;"/>`;
+          }
+        } else {
+          if (i - 1 >= 0 && fretNumbers[i - 1][fretNumbers[i - 1].length - 3] == 32 && !dotNeeded) { // same only left neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 154}" width="10" height="4" style="fill:black;"/>`;
+          } else { // no same neighbour
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 166}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 160}" width="10" height="4" style="fill:black;"/>`;
+            htmlResult += `<rect x="${currentX + digitIncrement - 10}" y="${200 * row + 154}" width="10" height="4" style="fill:black;"/>`;
+          }
+        }
+      }
     }
 
     return htmlResult;
+}
+
+function renderPointer() {
+  // pointer at start
+  //TABSHEET_CANVAS.innerHTML += `<rect x="502.5" y="5" width="20" height="126" rx="10" opacity="0.5" style="fill:#b50000;"/>`;
+  if (notePositions[0][1][1] == false) {
+    TABSHEET_CANVAS.innerHTML += `<rect x="${tabsheetWidth / 4 + borderNoteSpacing + 4}" y="5" width="3" height="126" id="player-pointer" style="fill:#FF3434"/>`;
+  } else {
+    TABSHEET_CANVAS.innerHTML += `<rect x="${tabsheetWidth / 4 + borderNoteSpacing + 10}" y="5" width="3" height="126" id="player-pointer" style="fill:#FF3434"/>`;
+  }
+
+  playerPointerElement = document.getElementById("player-pointer");
+}
+function movePointer(measure, harmony) {
+  let newX;
+  let newY = notePositions[measure][0] * 200 + 5;
+
+  if (notePositions[measure][harmony + 1][1] == false) {
+    newX = notePositions[measure][harmony + 1][0] + 4;
+  } else {
+    newX = notePositions[measure][harmony + 1][0] + 10;
+  }
+
+  playerPointerElement.setAttribute("x", newX);
+  playerPointerElement.setAttribute("y", newY);
+}
+
+function checkHarmonyDigits(harmony) {
+  for(let i = 0; i < harmony.length - 3; i++) {
+    if (harmony[i].charAt(2) != "0") {
+      return true;
+    }
+  }
+
+  return false;
 }
