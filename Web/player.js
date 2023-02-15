@@ -326,7 +326,9 @@ async function playSong () {
 
     for (let measure = startFrom; measure < parsedTab.length; measure++) {
       for (let harmony = 0; harmony < parsedTab[measure].length; harmony++) {
-        if (!stopRequest) {        
+        if (!stopRequest) {
+          movePointer(measure, harmony);
+          
           for (let string = 0; string < parsedTab[measure][harmony].length - 2; string ++) {
             // play current note (get audioBuffer by note name, note length)
             playAudio(audioBuffers[parsedTab[measure][harmony][string + 1]],
@@ -336,6 +338,7 @@ async function playSong () {
           await timer(parsedTab[measure][harmony][0]*1000 - DEVIATION);
         }
       }
+      // window.scrollBy(0, 30); // autoscroll
     }
   } else {
     ERROR_TEXT_ELEMENT.textContent = "Soubor s taby ještě nebyl zpracován " +
@@ -352,6 +355,7 @@ async function playSong () {
   PLAY_BUTTON_ELEMENT.style.fontSize = "20px";
   TEMPO_SLIDER_ELEMENT.removeAttribute("disabled");
   START_INPUT_ELEMENT.removeAttribute("disabled");
+  movePointer(startFrom, 0);
 }
 
 // Fetch audio file, decode it and stick it in a audioBuffer.
