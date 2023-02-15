@@ -2,17 +2,20 @@ const TABSHEET_CANVAS = document.getElementById("tabsheet-canvas");
 // TODO: responzivni na zaklade tabsheetWidth
 
 let tabsheetWidth = 1870;
-let rowSpacing = 200;
-let singleCharNoteSpacing = 40;
-let doubleCharNoteSpacing = 50;
-let borderNoteSpacing = 40;
-let measureNumberSpacing = 3;
+const rowSpacing = 200;
+const singleCharNoteSpacing = 40;
+const doubleCharNoteSpacing = 50;
+const borderNoteSpacing = 40;
+const measureNumberSpacing = 3;
+const minSpacing = 32;
+
+// list of position of each note
+// format: [measure[row, x1,..xn]]
+let notePositions = []; 
 
 function renderTabs(parsedTab) {
   let minimumMeasureWidths = generateMinimumMeasureWidths(parsedTab);
   let optimizedMeasureWidths = generateOptimizedMeasureWidths(minimumMeasureWidths);
-
-  console.log(optimizedMeasureWidths);
 
   renderRows(optimizedMeasureWidths);
   renderFretNumbers(optimizedMeasureWidths, parsedTab);
@@ -179,7 +182,7 @@ function renderRows(measureWidths) {
 
 // render fret numbers
 function renderFretNumbers(optimizedMeasureWidths, parsedTab) {
-  let lastX;
+  let lastX = 0;
   let measureNumber = 0;
   let htmlResult = "";
   
@@ -194,8 +197,9 @@ function renderFretNumbers(optimizedMeasureWidths, parsedTab) {
 
       measureNumber++;
       let fretNumbers = getFretNumbers(measureNumber, parsedTab);
-      let fretSpacing = ((optimizedMeasureWidths[i][j] * tabsheetWidth - borderNoteSpacing) / fretNumbers.length);
-      let currentMeasureHtml = generateMeasureFrets(fretNumbers, fretSpacing, i, lastX);
+      let currentMeasureWidth = optimizedMeasureWidths[i][j] * tabsheetWidth;
+      let currentNoteSpacing = generateMeasureNoteSpacing(fretNumbers, currentMeasureWidth, i, lastX);
+      let currentMeasureHtml = generateMeasureFrets(fretNumbers, currentNoteSpacing, i);
       
       lastX += optimizedMeasureWidths[i][j] * tabsheetWidth
       htmlResult += currentMeasureHtml;
@@ -206,49 +210,8 @@ function renderFretNumbers(optimizedMeasureWidths, parsedTab) {
 
 }
 
-// // return average spacing between notes in measure
-// function countFretSpacing(measureWidth, fretNumbers) {
-//   // sum all digits in fret numbers in current measure, only 1 or 2 per harmony
-//   let measureTotalFretDigits = 0;
-//   // let lastHasTwoDigits = false; TODO: asi odstranit
-
-//   for (let i = 0; i < fretNumbers.length; i++) {
-//     let harmonyContainsTwoChars = false;
-//     for (let j = 0; j < fretNumbers[i].length; j++) {
-//       if (fretNumbers[i][j].charAt(2) != "0") {
-//         harmonyContainsTwoChars = true;
-//       }
-//     }
-//     if(harmonyContainsTwoChars) {
-//       measureTotalFretDigits += 2;
-//     } else {
-//       measureTotalFretDigits++;
-//     }
-
-//     /*  TODO: asi odstranit
-//     if (i == (fretNumbers.length - 1) && harmonyContainsTwoChars) {
-//       lastHasTwoDigits = true;
-//     }
-//     */
-//   }
-
-//   //let result = ((measureWidth - borderNoteSpacing) / ((fretNumbers.length + measureTotalFretDigits) / 2));
-//   let result = ((measureWidth - borderNoteSpacing) / fretNumbers.length);
-
-//   /* TODO: asi odstranit
-//   if (!lastHasTwoDigits) {
-//     result = ((measureWidth - 2 * borderNoteSpacing) / fretNumbers.length);
-//   } else {
-//     result = ((measureWidth - borderNoteSpacing - doubleCharNoteSpacing) / fretNumbers.length);
-//   }
-
-//   */
-
-//   return result;
-
-// }
-
-//return fret numbers in current measure, including string number
+//return fret numbers in current measure, including string number, 
+// last element of each harmony is note length (fraction)
 function getFretNumbers(measureNumber, tab) {
   let measureContent = tab[measureNumber - 1];
   let result = [];
@@ -260,38 +223,82 @@ function getFretNumbers(measureNumber, tab) {
     for (let j = 1; j < measureContent[i].length - 2; j++) {
       currentHarmony.push(measureContent[i][j]);
     }
+
+    // get note length fraction
+    if (measureContent[i][measureContent[i].length - 2] == false) {  // if include dot
+      currentHarmony.push( 1 / measureContent[i][measureContent[i].length - 1]);
+    } else {
+      currentHarmony.push( 1 / (measureContent[i][measureContent[i].length - 1]) * 1.5);
+    }
+
     result.push(currentHarmony);
   }
 
   return result;
 }
 
-// return measure fret numbers as html svg
-function generateMeasureFrets(fretNumbers, fretSpacing, row, lastX) {
-    let htmlResult = "";
-    let currentX = lastX + borderNoteSpacing;
 
-    fretNumbers.forEach(harmony => {
-      for (let i = 0; i < harmony.length; i++) {
-        if (harmony[i] == "XXXX") {
+// return array of note X positions and push it also to global notePositions array including row
+function generateMeasureNoteSpacing(fretNumbers, measureWidth, row, startPosition) {
+  let currentMeasureSpacing = [];
+  let currentMeasurePositions = [];
+  let position = startPosition + borderNoteSpacing;
+  let realMeasureWidth = measureWidth - 2 * borderNoteSpacing;
+  let currentDifference = 0;
+
+  currentMeasureSpacing.push(position);  // first note in measure position
+
+  for (let i = 1; i < fretNumbers.length; i++) {
+    currentDifference = (position + realMeasureWidth * fretNumbers[i - 1][fretNumbers[i - 1].length - 1]) - position;
+    
+    if (currentDifference >= minSpacing) {
+      position += realMeasureWidth * fretNumbers[i - 1][fretNumbers[i - 1].length - 1];
+    } else {
+      position += minSpacing;
+    }
+
+    currentMeasureSpacing.push(position);
+  }
+
+  // push current row, positions to global notePositions array
+  currentMeasurePositions.push(row);
+  currentMeasureSpacing.forEach(notePosition => {
+    currentMeasurePositions.push(notePosition);
+  });
+  notePositions.push(currentMeasurePositions);
+
+  return currentMeasureSpacing;
+}
+
+// return measure fret numbers as html svg
+function generateMeasureFrets(fretNumbers, noteSpacing, row) {
+    let htmlResult = "";
+    let currentX, harmony;
+
+
+    for (let i = 0; i < fretNumbers.length; i++) {
+      currentX = noteSpacing[i];
+      harmony = fretNumbers[i];
+
+      for (let j = 0; j < harmony.length - 1; j++) {
+        if (harmony[j] == "XXXX") {
           // TODO finish
           htmlResult += `
             <rect x="${currentX - 3}" y="${58 + 200 * row}" width="20" height="8" style="fill:black;"/>
           `;
-        } else if (harmony[i].charAt(2) != "0") {
+        } else if (harmony[j].charAt(2) != "0") {
           htmlResult += `
-            <rect x="${currentX - 3}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="26" height="10" style="fill:white;"/>
-            <text x="${currentX}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[i].charAt(2) + harmony[i].charAt(3)}</text>
+            <rect x="${currentX - 3}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="26" height="10" style="fill:white;"/>
+            <text x="${currentX}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[j].charAt(2) + harmony[j].charAt(3)}</text>
           `;
         } else {
           htmlResult += `
-          <rect x="${currentX - 3}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="18" height="10" style="fill:white;"/>
-          <text x="${currentX}" y="${(harmony[i].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[i].charAt(3)}</text>
+          <rect x="${currentX - 3}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row - 11}" width="18" height="10" style="fill:white;"/>
+          <text x="${currentX}" y="${(harmony[j].charAt(0) - 1) * 20 + 25 + 200 * row}">${harmony[j].charAt(3)}</text>
         `;
         }
       }
-      currentX += fretSpacing;
-    });
+    }
 
     return htmlResult;
 }

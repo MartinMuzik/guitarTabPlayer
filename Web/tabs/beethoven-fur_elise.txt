@@ -1,7 +1,7 @@
 Ludwig Van Beethoven
 Für Elise
 120
-:02 XXXX
+.02 XXXX
 :08 1_12
 :08 1_11
 |
