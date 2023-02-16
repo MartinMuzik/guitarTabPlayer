@@ -1,5 +1,4 @@
 const TABSHEET_CANVAS = document.getElementById("tabsheet-canvas");
-// TODO: responzivni na zaklade tabsheetWidth
 
 let tabsheetWidth = document.body.clientWidth - 40; // min width is 1200px, max width is 1920px
 const rowSpacing = 200;
@@ -282,7 +281,7 @@ function generateMeasureNoteSpacing(fretNumbers, measureWidth, row, startPositio
   return currentMeasureSpacing;
 }
 
-// return measure fret numbers and note signs as html svg
+// return measure fret numbers, rests and note signs as html svg
 function generateMeasureFrets(fretNumbers, noteSpacing, row) {
     let htmlResult = "";
     let currentX, harmony;
@@ -463,6 +462,7 @@ function checkHarmonyDigits(harmony) {
 
 function resizeTabsheet() {
   if (isRendered && !isPlaying) {
+    notePositions = [];
     tabsheetWidth = document.body.clientWidth - 40;
     renderTabs(parsedTab);
   }

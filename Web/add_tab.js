@@ -4,7 +4,6 @@ const DISPLAY_NAME_ELEMENT = document.getElementById("display-name-input");
 const FILE_NAME_ELEMENT = document.getElementById("file-name-input");
 const ADD_BTN = document.getElementById("add-btn");
 const CHECK_BTN = document.getElementById("check-tab-btn");
-//const ADD_ERROR_LABEL = document.getElementById("tab-adding-error");
 
 let tabContent;
 let artist;

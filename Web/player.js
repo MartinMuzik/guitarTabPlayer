@@ -110,7 +110,6 @@ function loadSong() {
   }
 }
 
-// Parameter file: url of the text file containing tabs
 // Parse the file content to tabsArray and check if the file content is valid.
 function parseTabs() {
   parsedTab = [] // clear from previous loaded tab
