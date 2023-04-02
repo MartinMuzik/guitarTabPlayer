@@ -117,6 +117,9 @@ function generateOptimizedMeasureWidths(minimumMeasureWidths) {
     }
   }
   if (currentRow.length > 0) {
+    if (finalWidths.length == 0) {
+      currentRow.shift() // first "metadata" measure will be generated separately
+    }
     finalWidths.push(currentRow);
   }
 
