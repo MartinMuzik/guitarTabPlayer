@@ -2,11 +2,17 @@ linkin_park-numb
 Linkin Park - Numb
 red_hot_chilli_peppers-californication
 Red Hot Chilli Peppers - Californication
+kabat-pohoda
+Kabát - Pohoda
+johnny_cash-hurt
+Johnny Cash - Hurt
+metallica-one
+Metallica - One
 the_cranberries-zombie
 The Cranberries - Zombie
+five_finger_death_punch-wrong_side_of_heaven
+Five Finger Death Punch - Wrong Side of Heaven
 a_moll_pentatonic
 A Moll pentatonic
 all_notes
 All notes
-five_finger_death_punch-wrong_side_of_heaven
-Five Finger Death Punch - Wrong Side of Heaven
